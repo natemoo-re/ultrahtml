@@ -196,12 +196,17 @@ class Walker {
 }
 
 const HTMLString = Symbol("HTMLString");
-function markHTMLString(str: string): { value: string } {
-  return Object.defineProperty({ value: str }, HTMLString, {
-    value: true,
-    enumerable: false,
-    writable: false,
-  });
+const AttrString = Symbol("AttrString");
+function mark(str: string, tags: symbol[] = [HTMLString]): { value: string } {
+  const v = { value: str };
+  for (const tag of tags) {
+    Object.defineProperty(v, tag, {
+      value: true,
+      enumerable: false,
+      writable: false,
+    });
+  }
+  return v;
 }
 
 const ESCAPE_CHARS: Record<string, string> = {
@@ -212,13 +217,25 @@ const ESCAPE_CHARS: Record<string, string> = {
 function escapeHTML(str: string): string {
   return str.replace(/[&<>]/g, (c) => ESCAPE_CHARS[c] || c);
 }
-
+export function attrs(attributes: Record<string, string>) {
+  let attrStr = "";
+  for (const [key, value] of Object.entries(attributes)) {
+    attrStr += ` ${key}="${value}"`;
+  }
+  return mark(attrStr, [HTMLString, AttrString]);
+}
 export function html(tmpl: TemplateStringsArray, ...vals: any[]) {
   let buf = "";
   for (let i = 0; i < tmpl.length; i++) {
     buf += tmpl[i];
     const expr = vals[i];
-    if (expr && expr[HTMLString]) {
+    if (buf.endsWith('...') && expr && typeof expr === 'object') {
+      buf = buf.slice(0, -3).trimEnd();
+      buf += attrs(expr).value;
+    } else if (expr && expr[AttrString]) {
+      buf = buf.trimEnd();
+      buf += expr.value;
+    } else if (expr && expr[HTMLString]) {
       buf += expr.value;
     } else if (typeof expr === "string") {
       buf += escapeHTML(expr);
@@ -226,7 +243,7 @@ export function html(tmpl: TemplateStringsArray, ...vals: any[]) {
       buf += String(expr);
     }
   }
-  return markHTMLString(buf);
+  return mark(buf);
 }
 
 export function walk(node: Node, callback: Visitor): void {
@@ -375,14 +392,14 @@ async function renderElement(
   const component = opts.components[node.name];
   if (typeof component === "string")
     return renderElement({ ...node, name: component }, opts);
-  const attrs = sanitizeAttributes(
+  const attributes = sanitizeAttributes(
     node,
     opts.sanitize as Required<SanitizeOptions>
   );
   if (typeof component === "function") {
     const value = component(
-      attrs,
-      markHTMLString(
+      attributes,
+      mark(
         await Promise.all(
           node.children.map((child: Node) => render(child, opts))
         ).then((res) => res.join(""))
@@ -391,14 +408,10 @@ async function renderElement(
     if (value && (value as any)[HTMLString]) return value.value;
     return escapeHTML(String(value));
   }
-  let attrStr = "";
-  for (const [key, value] of Object.entries(attrs)) {
-    attrStr += ` ${key}="${value}"`;
-  }
   if (VOID_TAGS.hasOwnProperty(name)) {
-    return `<${node.name}${attrStr}>`;
+    return `<${node.name}${attrs(attributes).value}>`;
   }
-  return `<${node.name}${attrStr}>${await Promise.all(
+  return `<${node.name}${attrs(attributes).value}>${await Promise.all(
     node.children.map((child: Node) => render(child, opts))
   ).then((res) => res.join(""))}</${node.name}>`;
 }
@@ -434,4 +447,8 @@ export async function render(
     }
   }
   return "";
+}
+
+export async function transform(input: string|ReturnType<typeof html>, opts: RenderOptions = {}) {
+  return render(parse(input), opts);
 }
