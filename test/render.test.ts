@@ -36,4 +36,12 @@ describe("render API", () => {
     const output = await render(parse(input), { components });
     expect(output).toEqual(`<span>Hello world!</span>`);
   });
+  it("async Component", async () => {
+    const components = {
+      Title: async (_, children) => html`<span>${children}</span>`,
+    };
+    const input = `<Title>Hello world!</Title>`;
+    const output = await render(parse(input), { components });
+    expect(output).toEqual(`<span>Hello world!</span>`);
+  });
 });
