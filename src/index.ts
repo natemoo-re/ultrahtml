@@ -397,7 +397,7 @@ async function renderElement(
     opts.sanitize as Required<SanitizeOptions>
   );
   if (typeof component === "function") {
-    const value = component(
+    const value = await component(
       attributes,
       mark(
         await Promise.all(
