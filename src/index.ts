@@ -209,6 +209,10 @@ function mark(str: string, tags: symbol[] = [HTMLString]): { value: string } {
   return v;
 }
 
+export function __unsafeHTML(str: string) {
+  return mark(str);
+}
+
 const ESCAPE_CHARS: Record<string, string> = {
   "&": "&amp;",
   "<": "&lt;",
