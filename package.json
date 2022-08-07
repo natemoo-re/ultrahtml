@@ -12,8 +12,7 @@
   },
   "homepage": "https://github.com/natemoo-re/ultrahtml#README",
   "scripts": {
-    "build": "esbuild src/index.ts --target=node14 --outfile=dist/index.js",
-    "postbuild": "tsc -p .",
+    "build": "esbuild src/index.ts --target=node14 --outfile=dist/index.js && tsc -p .",
     "lint": "prettier \"**/*.{js,ts,md}\"",
     "test": "vitest"
   },
