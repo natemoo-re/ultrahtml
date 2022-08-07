@@ -1,5 +1,11 @@
 # ultrahtml
 
+## 0.0.3
+
+### Patch Changes
+
+- e0e8a2b: Add `__unsafeHTML` export
+
 ## 0.0.2
 
 ### Patch Changes
