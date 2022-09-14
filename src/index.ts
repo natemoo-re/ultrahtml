@@ -188,7 +188,7 @@ class Walker {
       let promises = [];
       for (let i = 0; i < node.children.length; i++) {
         const child = node.children[i];
-        promises.push(this.callback(child, node, i));
+        promises.push(this.visit(child, node, i));
       }
       await Promise.all(promises);
     }
@@ -250,9 +250,9 @@ export function html(tmpl: TemplateStringsArray, ...vals: any[]) {
   return mark(buf);
 }
 
-export function walk(node: Node, callback: Visitor): void {
+export function walk(node: Node, callback: Visitor): Promise<void> {
   const walker = new Walker(callback);
-  walker.visit(node);
+  return walker.visit(node);
 }
 
 export interface SanitizeOptions {
