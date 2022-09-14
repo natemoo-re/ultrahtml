@@ -1,5 +1,11 @@
 # ultrahtml
 
+## 0.0.5
+
+### Patch Changes
+
+- 23771a3: Fix `walk` function definition
+
 ## 0.0.4
 
 ### Patch Changes
