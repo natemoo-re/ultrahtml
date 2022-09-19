@@ -1,0 +1,16 @@
+{
+  "include": ["src"],
+  "compilerOptions": {
+    "declaration": true,
+    "emitDeclarationOnly": true,
+    "strict": true,
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "allowJs": true,
+    "module": "ES2020",
+    "outDir": "./dist",
+    "declarationDir": "./dist",
+    "target": "ES2020",
+  }
+}
