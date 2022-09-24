@@ -1,5 +1,11 @@
 # ultrahtml
 
+## 0.1.0
+
+### Minor Changes
+
+- 517e24d: Fix edge cases with text node detection, refactor for compactness
+
 ## 0.0.5
 
 ### Patch Changes
