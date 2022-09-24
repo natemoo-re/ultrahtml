@@ -31,8 +31,7 @@ export function parse(input: string | ReturnType<typeof html>): any {
   let str = typeof input === "string" ? input : input.value;
   let doc: Node,
     parent: Node,
-    prev,
-    token,
+    token: any,
     text,
     i,
     bStart,
@@ -41,27 +40,20 @@ export function parse(input: string | ReturnType<typeof html>): any {
     tag: Node;
   const tags: Node[] = [];
   DOM_PARSER_RE.lastIndex = 0;
-
   parent = doc = {
     type: DOCUMENT_NODE,
     children: [],
   };
 
+  let lastIndex = 0;
   function commitTextNode() {
-    // note: this is moved out of the loop but still uses its scope!
-    if (parent && tags.length > 0) {
-      prev = tags[tags.length - 1];
-      i = (prev.loc[1] || prev.loc[0]).end;
-      if (prev.parent === parent && i && i < tag.loc[0].start) {
-        text = str.substring(i, tag.loc[0].start);
-        if (text) {
-          parent.children.push({
-            type: TEXT_NODE,
-            value: text,
-            parent,
-          });
-        }
-      }
+    text = str.substring(lastIndex, DOM_PARSER_RE.lastIndex - token[0].length);
+    if (text) {
+      parent.children.push({
+        type: TEXT_NODE,
+        value: text,
+        parent
+      })
     }
   }
 
@@ -86,7 +78,6 @@ export function parse(input: string | ReturnType<typeof html>): any {
           },
         ],
       };
-      commitTextNode();
       tags.push(tag);
       tag.parent.children.push(tag);
     } else if (bStart === "<!") {
@@ -106,10 +97,11 @@ export function parse(input: string | ReturnType<typeof html>): any {
           },
         ],
       };
-      commitTextNode();
+      // commitTextNode();
       tags.push(tag);
       tag.parent.children.push(tag);
     } else if (token[1] !== "/") {
+      commitTextNode();
       tag = {
         type: ELEMENT_NODE,
         name: token[2] + "",
@@ -123,7 +115,6 @@ export function parse(input: string | ReturnType<typeof html>): any {
           },
         ],
       };
-      commitTextNode();
       tags.push(tag);
       tag.parent.children.push(tag);
       if (
@@ -136,6 +127,7 @@ export function parse(input: string | ReturnType<typeof html>): any {
         parent = tag;
       }
     } else {
+      commitTextNode();
       // Close parent node if end-tag matches
       if (token[2] + "" === parent.name) {
         tag = parent;
@@ -165,14 +157,14 @@ export function parse(input: string | ReturnType<typeof html>): any {
         });
       }
     }
+    lastIndex = DOM_PARSER_RE.lastIndex
   }
-  if (doc.children.length === 0) {
-    doc.children.push({
-      type: TEXT_NODE,
-      value: str,
-      parent,
-    });
-  }
+  text = str.slice(lastIndex);
+  parent.children.push({
+    type: TEXT_NODE,
+    value: text,
+    parent,
+  });
   return doc;
 }
 
@@ -233,7 +225,7 @@ export function html(tmpl: TemplateStringsArray, ...vals: any[]) {
   for (let i = 0; i < tmpl.length; i++) {
     buf += tmpl[i];
     const expr = vals[i];
-    if (buf.endsWith('...') && expr && typeof expr === 'object') {
+    if (buf.endsWith("...") && expr && typeof expr === "object") {
       buf = buf.slice(0, -3).trimEnd();
       buf += attrs(expr).value;
     } else if (expr && expr[AttrString]) {
@@ -347,7 +339,7 @@ function getAction(
     if (sanitize.blockElements.includes(name)) return "block";
   }
   if (sanitize.dropElements?.length > 0) {
-    if (sanitize.dropElements.find(n => n === name)) return "drop";
+    if (sanitize.dropElements.find((n) => n === name)) return "drop";
   }
   if (type === "component" && !sanitize.allowComponents) return "drop";
   if (type === "custom-element" && !sanitize.allowCustomElements) return "drop";
@@ -361,14 +353,16 @@ function sanitizeAttributes(
   const attrs: Record<string, string> = node.attributes;
   for (const key of Object.keys(node.attributes)) {
     if (
-      sanitize.allowAttributes?.[key] &&
-      sanitize.allowAttributes?.[key].includes(node.name) || sanitize.allowAttributes?.[key].includes('*')
+      (sanitize.allowAttributes?.[key] &&
+        sanitize.allowAttributes?.[key].includes(node.name)) ||
+      sanitize.allowAttributes?.[key].includes("*")
     ) {
       continue;
     }
     if (
-      sanitize.dropAttributes?.[key] &&
-      sanitize.dropAttributes?.[key].includes(node.name) || sanitize.dropAttributes?.[key].includes('*')
+      (sanitize.dropAttributes?.[key] &&
+        sanitize.dropAttributes?.[key].includes(node.name)) ||
+      sanitize.dropAttributes?.[key].includes("*")
     ) {
       delete attrs[key];
     }
@@ -453,6 +447,9 @@ export async function render(
   return "";
 }
 
-export async function transform(input: string|ReturnType<typeof html>, opts: RenderOptions = {}) {
+export async function transform(
+  input: string | ReturnType<typeof html>,
+  opts: RenderOptions = {}
+) {
   return render(parse(input), opts);
 }
