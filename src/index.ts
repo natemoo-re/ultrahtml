@@ -3,12 +3,13 @@ export interface Node {
   [key: string]: any;
 }
 
+export const DOCUMENT_NODE = 0;
+export const ELEMENT_NODE = 1;
+export const TEXT_NODE = 2;
+export const COMMENT_NODE = 3;
+export const DOCTYPE_NODE = 4;
+
 const VOID_TAGS = { img: 1, br: 1, hr: 1, meta: 1, link: 1, base: 1, input: 1 };
-const DOCUMENT_NODE = 0;
-const ELEMENT_NODE = 1;
-const TEXT_NODE = 2;
-const COMMENT_NODE = 3;
-const DOCTYPE_NODE = 4;
 const SPLIT_ATTRS_RE = /([\@\.a-z0-9_\:\-]*)\s*?=?\s*?(['"]?)(.*?)\2\s+/gim;
 const DOM_PARSER_RE =
   /(?:<(\/?)([a-zA-Z][a-zA-Z0-9\:]*)(?:\s([^>]*?))?((?:\s*\/)?)>|(<\!\-\-)([\s\S]*?)(\-\->)|(<\!)([\s\S]*?)(>))/gm;
