@@ -11,6 +11,11 @@ describe("input === output", () => {
     const output = await render(parse(input));
     expect(output).toEqual(input);
   });
+  it("works for custom elements", async () => {
+    const input = `<custom-element>Hello world!</custom-element>`;
+    const output = await render(parse(input), { sanitize: { allowCustomElements: true }});
+    expect(output).toEqual(input);
+  });
   it("works for comments", async () => {
     const input = `<!--foobar-->`;
     const output = await render(parse(input), { sanitize: { allowComments: true }});
