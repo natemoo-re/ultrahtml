@@ -1,7 +1,7 @@
 {
   "name": "ultrahtml",
   "type": "module",
-  "version": "0.1.3",
+  "version": "0.2.0",
   "types": "./dist/index.d.ts",
   "repository": {
     "type": "git",
