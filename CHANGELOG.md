@@ -1,5 +1,11 @@
 # ultrahtml
 
+## 0.2.1
+
+### Patch Changes
+
+- 037711f: Update types
+
 ## 0.2.0
 
 ### Minor Changes
