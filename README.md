@@ -14,11 +14,28 @@ A 1.75kB library for enhancing `html`. `ultrahtml` has zero dependencies and is 
 
 The `walk` function provides full control over the AST. It can be used to scan for text, elements, components, or any other validation you might want to do.
 
+> **Note** > `walk` is `async` and **must** be `await`ed. Use `walkSync` if it is guaranteed there are no `async` components in the tree.
+
 ```js
 import { parse, walk, ELEMENT_NODE } from "ultrahtml";
 
 const ast = parse(`<h1>Hello world!</h1>`);
-walk(ast, (node) => {
+await walk(ast, async (node) => {
+  if (node.type === ELEMENT_NODE && node.name === "script") {
+    throw new Error("Found a script!");
+  }
+});
+```
+
+#### `walkSync`
+
+The `walkSync` function is identical to the `walk` function, but is synchronous. This should only be used when it is guaranteed there are no `async` components in the tree.
+
+```js
+import { parse, walkSync, ELEMENT_NODE } from "ultrahtml";
+
+const ast = parse(`<h1>Hello world!</h1>`);
+walkSync(ast, (node) => {
   if (node.type === ELEMENT_NODE && node.name === "script") {
     throw new Error("Found a script!");
   }
