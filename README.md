@@ -3,10 +3,11 @@
 A 1.75kB library for enhancing `html`. `ultrahtml` has zero dependencies and is compatible with any JavaScript runtime.
 
 ### Features
+
 - Tiny, fault-tolerant and friendly HTML-like parser. Works with HTML, Astro, Vue, Svelte, and any other HTML-like syntax.
 - Built-in AST `walk` utility
 - Built-in `transform` utility for easy output manipulation
-- Automatic but configurable sanitization, adhering to the [HTML Sanitizer API](https://developer.mozilla.org/en-US/docs/Web/API/Sanitizer/Sanitizer)
+- Automatic but configurable sanitization, see [Sanitization](#sanitization)
 - Handy `html` template utility
 
 #### `walk`
@@ -14,22 +15,25 @@ A 1.75kB library for enhancing `html`. `ultrahtml` has zero dependencies and is 
 The `walk` function provides full control over the AST. It can be used to scan for text, elements, components, or any other validation you might want to do.
 
 ```js
-import { parse, walk, ELEMENT_NODE } from 'ultrahtml';
+import { parse, walk, ELEMENT_NODE } from "ultrahtml";
 
 const ast = parse(`<h1>Hello world!</h1>`);
 walk(ast, (node) => {
-  if (node.type === ELEMENT_NODE && node.name === 'script') {
-    throw new Error('Found a script!')
+  if (node.type === ELEMENT_NODE && node.name === "script") {
+    throw new Error("Found a script!");
   }
-})
+});
 ```
 
 #### `render`
 
 The `render` function allows you to serialize an AST back into a string.
 
+> **Note**
+> By default, `render` will sanitize your markup, removing any `script` tags. Pass `{ sanitize: false }` to disable this behavior.
+
 ```js
-import { parse, render } from 'ultrahtml';
+import { parse, render } from "ultrahtml";
 
 const ast = parse(`<h1>Hello world!</h1>`);
 const output = await render(ast);
@@ -37,19 +41,37 @@ const output = await render(ast);
 
 #### `transform`
 
-The `transform` function provides a straight-forward way to swap in-place elements (or Components) and update them with a new value.
+The `transform` function provides a straight-forward way to swap in-place elements (or Components) and update them with a new value. It is a shortcut that combines `parse` and `render`.
+
+> **Note**
+> By default, `transform` will sanitize your markup, removing any `script` tags. Pass `{ sanitize: false }` to disable this behavior.
 
 ```js
-import { transform, html } from 'ultrahtml';
+import { transform, html } from "ultrahtml";
 
 const output = await transform(`<h1>Hello world!</h1>`, {
   components: {
-    h1: (props, children) => html`<h1 class="ultra">${children}</h1>`
-  }
-})
+    h1: (props, children) => html`<h1 class="ultra">${children}</h1>`,
+  },
+});
 
-console.log(output) // <h1 class="ultra">Hello world!</h1>
+console.log(output); // <h1 class="ultra">Hello world!</h1>
 ```
+
+#### Sanitization
+
+`ultrahtml` implements an extension of the [HTML Sanitizer API](https://developer.mozilla.org/en-US/docs/Web/API/Sanitizer/Sanitizer). This is enabled by default, but can be turned off by passing `{ sanitize: false }` to `render` and `transform`.
+
+| Option              | Type                       | Default      | Description                                                                                                                                                                                                                               |
+| ------------------- | -------------------------- | ------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| allowElements       | `string[]`                 | `undefined`  | An array of strings indicating elements that the sanitizer should not remove. All elements not in the array will be dropped.                                                                                                              |
+| blockElements       | `string[]`                 | `undefined`  | An array of strings indicating elements that the sanitizer should remove, but keep their child elements.                                                                                                                                  |
+| dropElements        | `string[]`                 | `["script"]` | An array of strings indicating elements (including nested elements) that the sanitizer should remove.                                                                                                                                     |
+| allowAttributes     | `Record<string, string[]>` | `undefined`  | An object where each key is the attribute name and the value is an Array of allowed tag names. Matching attributes will not be removed. All attributes that are not in the array will be dropped.                                         |
+| dropAttributes      | `Record<string, string[]>` | `undefined`  | An object where each key is the attribute name and the value is an Array of dropped tag names. Matching attributes will be removed.                                                                                                       |
+| allowComponents     | `boolean`                  | `false`      | A boolean value set to false (default) to remove components and their children. If set to true, components will be subject to built-in and custom configuration checks (and will be retained or dropped based on those checks).           |
+| allowCustomElements | `boolean`                  | `false`      | A boolean value set to false (default) to remove custom elements and their children. If set to true, custom elements will be subject to built-in and custom configuration checks (and will be retained or dropped based on those checks). |
+| allowComments       | `boolean`                  | `false`      | A boolean value set to false (default) to remove HTML comments. Set to true in order to keep comments.                                                                                                                                    |
 
 ## Acknowledgements
 
