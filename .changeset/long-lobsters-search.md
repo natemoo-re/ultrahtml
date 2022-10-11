@@ -1,0 +1,5 @@
+---
+"ultrahtml": patch
+---
+
+Update types
