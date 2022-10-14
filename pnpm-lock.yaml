@@ -4,6 +4,7 @@ specifiers:
   '@changesets/cli': ^2.18.1
   esbuild: ^0.14.51
   markdown-it: ^13.0.1
+  parsel-js: ^1.0.2
   prettier: ^2.5.1
   typescript: ^4.7.4
   vitest: ^0.20.2
@@ -12,6 +13,7 @@ devDependencies:
   '@changesets/cli': 2.24.1
   esbuild: 0.14.51
   markdown-it: 13.0.1
+  parsel-js: 1.0.2
   prettier: 2.7.1
   typescript: 4.7.4
   vitest: 0.20.2
@@ -1495,6 +1497,10 @@ packages:
       error-ex: 1.3.2
       json-parse-even-better-errors: 2.3.1
       lines-and-columns: 1.2.4
+    dev: true
+
+  /parsel-js/1.0.2:
+    resolution: {integrity: sha512-G8Wzng7kxh8k6trrL5U5Fv25r7WJ/s4SEo8B6AF/5qSMq6PfptKXSWvBYw3s6eEXKFjWIsMc5hxuekht5XRbng==}
     dev: true
 
   /path-exists/4.0.0:

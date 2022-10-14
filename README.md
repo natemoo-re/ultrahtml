@@ -9,6 +9,7 @@ A 1.75kB library for enhancing `html`. `ultrahtml` has zero dependencies and is 
 - Built-in `transform` utility for easy output manipulation
 - Automatic but configurable sanitization, see [Sanitization](#sanitization)
 - Handy `html` template utility
+- `querySelector` and `querySelectorAll` support using `ultrahtml/selector`
 
 #### `walk`
 
