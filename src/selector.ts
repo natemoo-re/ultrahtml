@@ -1,5 +1,7 @@
 import { ELEMENT_NODE, Node, TEXT_NODE, walkSync } from './index.js';
-import { AST, parse, Tokens, specificity as getSpecificity, specificityToNumber } from 'parsel-js';
+import type { AST, Tokens } from 'parsel-js';
+import * as parsel from 'parsel-js';
+const { parse, specificity: getSpecificity, specificityToNumber } = parsel;
 
 export function specificity(selector: string) {
     return specificityToNumber(getSpecificity(selector));
