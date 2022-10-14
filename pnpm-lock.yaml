@@ -9,11 +9,13 @@ specifiers:
   typescript: ^4.7.4
   vitest: ^0.20.2
 
+dependencies:
+  parsel-js: 1.0.2
+
 devDependencies:
   '@changesets/cli': 2.24.1
   esbuild: 0.14.51
   markdown-it: 13.0.1
-  parsel-js: 1.0.2
   prettier: 2.7.1
   typescript: 4.7.4
   vitest: 0.20.2
@@ -1501,7 +1503,7 @@ packages:
 
   /parsel-js/1.0.2:
     resolution: {integrity: sha512-G8Wzng7kxh8k6trrL5U5Fv25r7WJ/s4SEo8B6AF/5qSMq6PfptKXSWvBYw3s6eEXKFjWIsMc5hxuekht5XRbng==}
-    dev: true
+    dev: false
 
   /path-exists/4.0.0:
     resolution: {integrity: sha512-ak9Qy5Q7jYb2Wwcey5Fpvg2KoAc/ZIhLSLOSBmRmygPsGwkVVt0fZa0qrtMz+m6tJTAHfZQ8FnmB4MG4LWy7/w==}
