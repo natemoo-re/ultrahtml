@@ -1,5 +1,11 @@
 # ultrahtml
 
+## 0.3.3
+
+### Patch Changes
+
+- 3b8fb6e: Remove bundledDependencies field
+
 ## 0.3.2
 
 ### Patch Changes
