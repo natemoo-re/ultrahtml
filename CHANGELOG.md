@@ -1,5 +1,11 @@
 # ultrahtml
 
+## 0.3.1
+
+### Patch Changes
+
+- a105c5e: Fix CJS compat issue
+
 ## 0.3.0
 
 ### Minor Changes
