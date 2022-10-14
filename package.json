@@ -16,7 +16,8 @@
     "build:selector": "esbuild src/selector.ts --format=esm --minify --bundle --external:./index.js --sourcemap=external --target=node14 --outfile=dist/selector.js",
     "build": "pnpm run build:index && pnpm run build:selector && tsc -p .",
     "lint": "prettier \"**/*.{js,ts,md}\"",
-    "test": "vitest"
+    "dev": "vitest",
+    "test": "vitest run"
   },
   "files": [
     "selector.d.ts",
