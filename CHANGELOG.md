@@ -1,5 +1,12 @@
 # ultrahtml
 
+## 0.3.2
+
+### Patch Changes
+
+- 74010dd: Bundle parsel-js to avoid ESM/CJS issues
+- d7b514d: Fix CJS compat issue (again)
+
 ## 0.3.1
 
 ### Patch Changes
