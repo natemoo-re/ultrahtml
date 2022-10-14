@@ -5,6 +5,11 @@ export function specificity(selector: string) {
     return specificityToNumber(getSpecificity(selector));
 }
 
+export function matches(node: Node, selector: string): boolean {
+    const match = selectorToMatch(selector);
+    return match(node, node.parent, nthChildIndex(node, node.parent))
+}
+
 export function querySelector(node: Node, selector: string): Node {
     const match = selectorToMatch(selector);
     try {
@@ -61,7 +66,7 @@ const getAttributeMatch = (selector: Tokens) => {
     return (a: string, b: string) => false;
 }
 
-const nthChildIndex = (node: Node, parent?: Node, index?: number) => parent?.children.filter((n: Node) => n.type === ELEMENT_NODE).findIndex((n: Node) => n === node);
+const nthChildIndex = (node: Node, parent?: Node) => parent?.children.filter((n: Node) => n.type === ELEMENT_NODE).findIndex((n: Node) => n === node);
 const nthChild = (formula: string) => {
     let [_, A = '1', B = '0'] = /^\s*(?:(-?(?:\d+)?)n)?\s*\+?\s*(\d+)?\s*$/gm.exec(formula) ?? [];
     if (A.length === 0) A = '1'
