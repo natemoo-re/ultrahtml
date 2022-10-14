@@ -13,7 +13,7 @@
   "homepage": "https://github.com/natemoo-re/ultrahtml#README",
   "scripts": {
     "build:index": "esbuild src/index.ts --bundle --format=esm --minify --sourcemap=external --target=node14 --outfile=dist/index.js",
-    "build:selector": "esbuild src/selector.ts --format=esm --minify --sourcemap=external --target=node14 --outfile=dist/selector.js",
+    "build:selector": "esbuild src/selector.ts --format=esm --minify --bundle --external:./index.js --sourcemap=external --target=node14 --outfile=dist/selector.js",
     "build": "pnpm run build:index && pnpm run build:selector && tsc -p .",
     "lint": "prettier \"**/*.{js,ts,md}\"",
     "test": "vitest"
@@ -44,10 +44,11 @@
     "node": "18.7.0"
   },
   "packageManager": "pnpm@7.6.0",
-  "dependencies": {
-    "parsel-js": "^1.0.2"
-  },
+  "bundledDependencies": [
+    "parsel-js"
+  ],
   "devDependencies": {
+    "parsel-js": "^1.0.2",
     "@changesets/cli": "^2.18.1",
     "esbuild": "^0.14.51",
     "markdown-it": "^13.0.1",
