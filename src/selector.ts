@@ -1,6 +1,7 @@
 import { ELEMENT_NODE, Node, TEXT_NODE, walkSync } from './index.js';
 import type { AST, Tokens } from 'parsel-js';
-import * as parsel from 'parsel-js';
+// @ts-ignore
+import * as parsel from 'parsel-js/dist/cjs/parsel.min.js';
 const { parse, specificity: getSpecificity, specificityToNumber } = parsel;
 
 export function specificity(selector: string) {
