@@ -2,7 +2,7 @@ import { ELEMENT_NODE, Node, TEXT_NODE, walkSync } from './index.js';
 import type { AST, Tokens } from 'parsel-js';
 // @ts-ignore
 import * as parsel from 'parsel-js/dist/cjs/parsel.min.js';
-const { parse, specificity: getSpecificity, specificityToNumber } = parsel;
+const { parse, specificity: getSpecificity, specificityToNumber } = parsel as any;
 
 export function specificity(selector: string) {
     return specificityToNumber(getSpecificity(selector));
@@ -156,7 +156,7 @@ const selectorToMatch = (sel: string | AST): Matcher => {
     let selector = typeof sel === 'string' ? parse(sel) : sel;
     switch (selector.type) {
         case 'list': {
-            const matchers = selector.list.map(s => createMatch(s));
+            const matchers = selector.list.map((s: any) => createMatch(s));
             return (node: Node, parent?: Node, index?: number) => {
                 for (const match of matchers) {
                     if (match(node, parent!)) return true;
@@ -165,7 +165,7 @@ const selectorToMatch = (sel: string | AST): Matcher => {
             }
         }
         case 'compound': {
-            const matchers = selector.list.map(s => createMatch(s));
+            const matchers = selector.list.map((s: any) => createMatch(s));
             return (node: Node, parent?: Node, index?: number) => {
                 for (const match of matchers) {
                     if (!match(node, parent!)) return false;
