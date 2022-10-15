@@ -1,5 +1,11 @@
 # ultrahtml
 
+## 0.4.0
+
+### Minor Changes
+
+- 83c2e35: Improve declarations for node types
+
 ## 0.3.3
 
 ### Patch Changes
