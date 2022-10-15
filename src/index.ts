@@ -1,6 +1,46 @@
-export interface Node {
-  type: number;
+export type Node = DocumentNode | ElementNode | TextNode | CommentNode | DoctypeNode;
+export type NodeType = typeof DOCUMENT_NODE | typeof ELEMENT_NODE | typeof TEXT_NODE | typeof COMMENT_NODE | typeof DOCTYPE_NODE;
+export interface Location {
+  start: number;
+  end: number;
+}
+interface BaseNode {
+  type: NodeType;
+  loc: [Location, Location];
+  parent: Node;
   [key: string]: any;
+}
+
+interface LiteralNode extends BaseNode {
+  value: string;
+}
+
+interface ParentNode extends BaseNode {
+  children: Node[]
+}
+
+export interface DocumentNode extends Omit<ParentNode, 'parent'> {
+  type: typeof DOCUMENT_NODE;
+  attributes: Record<string, string>;
+  parent: undefined;
+}
+
+export interface ElementNode extends ParentNode {
+  type: typeof ELEMENT_NODE;
+  name: string;
+  attributes: Record<string, string>;
+}
+
+export interface TextNode extends LiteralNode {
+  type: typeof TEXT_NODE;
+}
+
+export interface CommentNode extends LiteralNode {
+  type: typeof COMMENT_NODE;
+}
+
+export interface DoctypeNode extends LiteralNode {
+  type: typeof DOCTYPE_NODE;
 }
 
 export const DOCUMENT_NODE = 0;
@@ -43,18 +83,18 @@ export function parse(input: string | ReturnType<typeof html>): any {
   DOM_PARSER_RE.lastIndex = 0;
   parent = doc = {
     type: DOCUMENT_NODE,
-    children: [],
-  };
+    children: [] as Node[],
+  } as any;
 
   let lastIndex = 0;
   function commitTextNode() {
     text = str.substring(lastIndex, DOM_PARSER_RE.lastIndex - token[0].length);
     if (text) {
-      parent.children.push({
+      (parent as ParentNode).children.push({
         type: TEXT_NODE,
         value: text,
         parent
-      })
+      } as any)
     }
   }
 
@@ -78,9 +118,9 @@ export function parse(input: string | ReturnType<typeof html>): any {
             end: DOM_PARSER_RE.lastIndex,
           },
         ],
-      };
+      } as any;
       tags.push(tag);
-      tag.parent.children.push(tag);
+      (tag.parent as any).children.push(tag);
     } else if (bStart === "<!") {
       i = DOM_PARSER_RE.lastIndex - token[0].length;
       tag = {
@@ -114,7 +154,7 @@ export function parse(input: string | ReturnType<typeof html>): any {
             start: DOM_PARSER_RE.lastIndex - token[0].length,
             end: DOM_PARSER_RE.lastIndex,
           },
-        ],
+        ] as any,
       };
       tags.push(tag);
       tag.parent.children.push(tag);
@@ -132,7 +172,7 @@ export function parse(input: string | ReturnType<typeof html>): any {
       // Close parent node if end-tag matches
       if (token[2] + "" === parent.name) {
         tag = parent;
-        parent = tag.parent;
+        parent = tag.parent!;
         tag.loc.push({
           start: DOM_PARSER_RE.lastIndex - token[0].length,
           end: DOM_PARSER_RE.lastIndex,
@@ -341,8 +381,8 @@ function resolveSantizeOptions({
   }
 }
 
-type NodeType = "element" | "component" | "custom-element";
-function getNodeType(node: Node): NodeType {
+type NodeKind = "element" | "component" | "custom-element";
+function getNodeKind(node: Node): NodeKind {
   if (node.name.includes("-")) return "custom-element";
   if (/[\_\$A-Z]/.test(node.name[0]) || node.name.includes("."))
     return "component";
@@ -352,7 +392,7 @@ function getNodeType(node: Node): NodeType {
 type ActionType = "allow" | "drop" | "block";
 function getAction(
   name: string,
-  type: NodeType,
+  kind: NodeKind,
   sanitize: Required<SanitizeOptions>
 ): ActionType {
   if (sanitize.allowElements?.length > 0) {
@@ -364,8 +404,8 @@ function getAction(
   if (sanitize.dropElements?.length > 0) {
     if (sanitize.dropElements.find((n) => n === name)) return "drop";
   }
-  if (type === "component" && !sanitize.allowComponents) return "drop";
-  if (type === "custom-element" && !sanitize.allowCustomElements) return "drop";
+  if (kind === "component" && !sanitize.allowComponents) return "drop";
+  if (kind === "custom-element" && !sanitize.allowCustomElements) return "drop";
   return "allow";
 }
 
@@ -397,11 +437,11 @@ async function renderElement(
   node: Node,
   opts: Required<RenderOptions>
 ): Promise<string> {
-  const type = getNodeType(node);
+  const kind = getNodeKind(node);
   const { name } = node;
   const action = getAction(
     name,
-    type,
+    kind,
     opts.sanitize as Required<SanitizeOptions>
   );
   if (action === "drop") return "";
@@ -467,7 +507,6 @@ export async function render(
       return `<!${node.value}>`;
     }
   }
-  return "";
 }
 
 export async function transform(

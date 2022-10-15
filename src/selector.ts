@@ -1,4 +1,5 @@
-import { ELEMENT_NODE, Node, TEXT_NODE, walkSync } from './index.js';
+import type { Node } from './index';
+import { ELEMENT_NODE, TEXT_NODE, walkSync } from './index.js';
 import type { AST, Tokens } from 'parsel-js';
 import { parse, specificity as getSpecificity, specificityToNumber } from 'parsel-js';
 
