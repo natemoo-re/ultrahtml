@@ -1,5 +1,11 @@
 # ultrahtml
 
+## 1.0.0-next.1
+
+### Patch Changes
+
+- da119c1: Fix transformer definitions
+
 ## 1.0.0-next.0
 
 ### Major Changes
