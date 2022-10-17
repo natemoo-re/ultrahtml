@@ -1,5 +1,11 @@
 # ultrahtml
 
+## 1.0.0-next.3
+
+### Patch Changes
+
+- 4699020: Update JSX runtime child handling
+
 ## 1.0.0-next.2
 
 ### Patch Changes
