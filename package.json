@@ -20,6 +20,7 @@
   "files": [
     "selector.d.ts",
     "transform.d.ts",
+    "jsx-runtime.d.ts",
     "transformers",
     "dist",
     "CHANGELOG.md"
@@ -37,6 +38,10 @@
     "./transformers/*": {
       "types": "./dist/transformers/*.d.ts",
       "import": "./dist/transformers/*.js"
+    },
+    "./jsx-runtime": {
+      "types": "./dist/jsx-runtime/index.d.ts",
+      "import": "./dist/jsx-runtime/index.js"
     }
   },
   "keywords": [
