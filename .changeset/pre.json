@@ -5,6 +5,7 @@
     "ultrahtml": "0.3.3"
   },
   "changesets": [
-    "bright-garlics-destroy"
+    "bright-garlics-destroy",
+    "pretty-mangos-prove"
   ]
 }
