@@ -1,4 +1,4 @@
-import type { Node } from './index';
+import type { Node } from './index.js';
 import { ELEMENT_NODE, TEXT_NODE, walkSync } from './index.js';
 import type { AST, Tokens } from 'parsel-js';
 import { parse, specificity as getSpecificity, specificityToNumber } from 'parsel-js';
@@ -90,6 +90,7 @@ const createMatch = (selector: AST): Matcher => {
         case 'id': return (node: Node) => node.attributes?.id === selector.name;
         case 'pseudo-class': {
             switch (selector.name) {
+                case 'global': return (...args) => selectorToMatch(parse(selector.argument!))(...args);
                 case 'not': return (...args) => !createMatch(selector.subtree!)(...args);
                 case 'is': return (...args) => selectorToMatch(selector.subtree!)(...args);
                 case 'where': return (...args) => selectorToMatch(selector.subtree!)(...args);

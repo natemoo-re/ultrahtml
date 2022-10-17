@@ -1,5 +1,15 @@
-export type Node = DocumentNode | ElementNode | TextNode | CommentNode | DoctypeNode;
-export type NodeType = typeof DOCUMENT_NODE | typeof ELEMENT_NODE | typeof TEXT_NODE | typeof COMMENT_NODE | typeof DOCTYPE_NODE;
+export type Node =
+  | DocumentNode
+  | ElementNode
+  | TextNode
+  | CommentNode
+  | DoctypeNode;
+export type NodeType =
+  | typeof DOCUMENT_NODE
+  | typeof ELEMENT_NODE
+  | typeof TEXT_NODE
+  | typeof COMMENT_NODE
+  | typeof DOCTYPE_NODE;
 export interface Location {
   start: number;
   end: number;
@@ -16,10 +26,10 @@ interface LiteralNode extends BaseNode {
 }
 
 interface ParentNode extends BaseNode {
-  children: Node[]
+  children: Node[];
 }
 
-export interface DocumentNode extends Omit<ParentNode, 'parent'> {
+export interface DocumentNode extends Omit<ParentNode, "parent"> {
   type: typeof DOCUMENT_NODE;
   attributes: Record<string, string>;
   parent: undefined;
@@ -48,6 +58,30 @@ export const ELEMENT_NODE = 1;
 export const TEXT_NODE = 2;
 export const COMMENT_NODE = 3;
 export const DOCTYPE_NODE = 4;
+
+export function h(
+  type: any,
+  props: null | Record<string, any> = {},
+  ...children: any[]
+) {
+  const vnode: ElementNode = {
+    type: ELEMENT_NODE,
+    name: typeof type === "function" ? type.name : type,
+    attributes: props || {},
+    children: children.map((child) =>
+      typeof child === "string"
+        ? { type: TEXT_NODE, value: escapeHTML(String(child)) }
+        : child
+    ),
+    parent: undefined as any,
+    loc: [] as any,
+  };
+  if (typeof type === "function") {
+    __unsafeRenderFn(vnode, type);
+  }
+  return vnode;
+}
+export const Fragment = Symbol("Fragment");
 
 const VOID_TAGS = { img: 1, br: 1, hr: 1, meta: 1, link: 1, base: 1, input: 1 };
 const SPLIT_ATTRS_RE = /([\@\.a-z0-9_\:\-]*)\s*?=?\s*?(['"]?)(.*?)\2\s+/gim;
@@ -93,8 +127,8 @@ export function parse(input: string | ReturnType<typeof html>): any {
       (parent as ParentNode).children.push({
         type: TEXT_NODE,
         value: text,
-        parent
-      } as any)
+        parent,
+      } as any);
     }
   }
 
@@ -198,7 +232,7 @@ export function parse(input: string | ReturnType<typeof html>): any {
         });
       }
     }
-    lastIndex = DOM_PARSER_RE.lastIndex
+    lastIndex = DOM_PARSER_RE.lastIndex;
   }
   text = str.slice(lastIndex);
   parent.children.push({
@@ -247,6 +281,7 @@ class WalkerSync {
 
 const HTMLString = Symbol("HTMLString");
 const AttrString = Symbol("AttrString");
+export const RenderFn = Symbol("RenderFn");
 function mark(str: string, tags: symbol[] = [HTMLString]): { value: string } {
   const v = { value: str };
   for (const tag of tags) {
@@ -261,6 +296,16 @@ function mark(str: string, tags: symbol[] = [HTMLString]): { value: string } {
 
 export function __unsafeHTML(str: string) {
   return mark(str);
+}
+export function __unsafeRenderFn(
+  node: ElementNode,
+  fn: (props: Record<string, any>, ...children: Node[]) => Node
+) {
+  Object.defineProperty(node, RenderFn, {
+    value: fn,
+    enumerable: false,
+  });
+  return node;
 }
 
 const ESCAPE_CHARS: Record<string, string> = {
@@ -310,208 +355,52 @@ export function walkSync(node: Node, callback: VisitorSync): void {
   return walker.visit(node);
 }
 
-export interface SanitizeOptions {
-  /** An Array of strings indicating elements that the sanitizer should not remove. All elements not in the array will be dropped. */
-  allowElements?: string[];
-  /** An Array of strings indicating elements that the sanitizer should remove, but keeping their child elements. */
-  blockElements?: string[];
-  /** An Array of strings indicating elements (including nested elements) that the sanitizer should remove. */
-  dropElements?: string[];
-  /** An Object where each key is the attribute name and the value is an Array of allowed tag names. Matching attributes will not be removed. All attributes that are not in the array will be dropped. */
-  allowAttributes?: Record<string, string[]>;
-  /** An Object where each key is the attribute name and the value is an Array of dropped tag names. Matching attributes will be removed. */
-  dropAttributes?: Record<string, string[]>;
-  /** A Boolean value set to false (default) to remove components and their children. If set to true, components will be subject to built-in and custom configuration checks (and will be retained or dropped based on those checks). */
-  allowComponents?: boolean;
-  /** A Boolean value set to false (default) to remove custom elements and their children. If set to true, custom elements will be subject to built-in and custom configuration checks (and will be retained or dropped based on those checks). */
-  allowCustomElements?: boolean;
-  /** A Boolean value set to false (default) to remove HTML comments. Set to true in order to keep comments. */
-  allowComments?: boolean;
-}
-export interface RenderOptions {
-  sanitize?: SanitizeOptions | boolean;
-  components?: {
-    [tag: string]:
-      | string
-      | ((
-          attrs: Record<string, any>,
-          children: ReturnType<typeof html>
-        ) => ReturnType<typeof html>);
-  };
-}
-
-function resolveSantizeOptions({
-  components = {},
-  sanitize = true,
-}: RenderOptions): SanitizeOptions {
-  if (sanitize === true) {
-    return {
-      allowElements: Object.keys(components),
-      dropElements: ["script"],
-      allowComponents: false,
-      allowCustomElements: false,
-      allowComments: false,
-    };
-  } else if (sanitize === false) {
-    return {
-      dropElements: [],
-      allowComponents: true,
-      allowCustomElements: true,
-      allowComments: true,
-    };
-  } else {
-    const dropElements = new Set<string>([]);
-    if (!sanitize.allowElements?.includes("script")) {
-      dropElements.add("script");
-    }
-    for (const dropElement of sanitize.dropElements ?? []) {
-      dropElements.add(dropElement);
-    }
-    return {
-      allowComponents: false,
-      allowCustomElements: false,
-      allowComments: false,
-      ...sanitize,
-      allowElements: [
-        ...Object.keys(components),
-        ...(sanitize.allowElements ?? []),
-      ],
-      dropElements: Array.from(dropElements),
-    };
-  }
-}
-
-type NodeKind = "element" | "component" | "custom-element";
-function getNodeKind(node: Node): NodeKind {
-  if (node.name.includes("-")) return "custom-element";
-  if (/[\_\$A-Z]/.test(node.name[0]) || node.name.includes("."))
-    return "component";
-  return "element";
-}
-
-type ActionType = "allow" | "drop" | "block";
-function getAction(
-  name: string,
-  kind: NodeKind,
-  sanitize: Required<SanitizeOptions>
-): ActionType {
-  if (sanitize.allowElements?.length > 0) {
-    if (sanitize.allowElements.includes(name)) return "allow";
-  }
-  if (sanitize.blockElements?.length > 0) {
-    if (sanitize.blockElements.includes(name)) return "block";
-  }
-  if (sanitize.dropElements?.length > 0) {
-    if (sanitize.dropElements.find((n) => n === name)) return "drop";
-  }
-  if (kind === "component" && !sanitize.allowComponents) return "drop";
-  if (kind === "custom-element" && !sanitize.allowCustomElements) return "drop";
-  return "allow";
-}
-
-function sanitizeAttributes(
-  node: Node,
-  sanitize: Required<SanitizeOptions>
-): Record<string, string> {
-  const attrs: Record<string, string> = node.attributes;
-  for (const key of Object.keys(node.attributes)) {
-    if (
-      (sanitize.allowAttributes?.[key] &&
-        sanitize.allowAttributes?.[key].includes(node.name)) ||
-      sanitize.allowAttributes?.[key].includes("*")
-    ) {
-      continue;
-    }
-    if (
-      (sanitize.dropAttributes?.[key] &&
-        sanitize.dropAttributes?.[key].includes(node.name)) ||
-      sanitize.dropAttributes?.[key].includes("*")
-    ) {
-      delete attrs[key];
-    }
-  }
-  return attrs;
-}
-
-async function renderElement(
-  node: Node,
-  opts: Required<RenderOptions>
-): Promise<string> {
-  const kind = getNodeKind(node);
-  const { name } = node;
-  const action = getAction(
-    name,
-    kind,
-    opts.sanitize as Required<SanitizeOptions>
-  );
-  if (action === "drop") return "";
-  if (action === "block")
-    return await Promise.all(
-      node.children.map((child: Node) => render(child, opts))
-    ).then((res) => res.join(""));
-
-  const component = opts.components[node.name];
-  if (typeof component === "string")
-    return renderElement({ ...node, name: component }, opts);
-  const attributes = sanitizeAttributes(
-    node,
-    opts.sanitize as Required<SanitizeOptions>
-  );
-  if (typeof component === "function") {
-    const value = await component(
+async function renderElement(node: Node): Promise<string> {
+  const { name, attributes = {} } = node;
+  const children = await Promise.all(
+    node.children.map((child: Node) => render(child))
+  ).then((res) => res.join(""))
+  if (RenderFn in node) {
+    const value = await (node as any)[RenderFn](
       attributes,
-      mark(
-        await Promise.all(
-          node.children.map((child: Node) => render(child, opts))
-        ).then((res) => res.join(""))
-      )
+      mark(children)
     );
     if (value && (value as any)[HTMLString]) return value.value;
     return escapeHTML(String(value));
   }
+  if (name === Fragment) return children;
   if (VOID_TAGS.hasOwnProperty(name)) {
     return `<${node.name}${attrs(attributes).value}>`;
   }
-  return `<${node.name}${attrs(attributes).value}>${await Promise.all(
-    node.children.map((child: Node) => render(child, opts))
-  ).then((res) => res.join(""))}</${node.name}>`;
+  return `<${node.name}${attrs(attributes).value}>${children}</${node.name}>`;
 }
 
-export async function render(
-  node: Node,
-  opts: RenderOptions = {}
-): Promise<string> {
-  const sanitize = resolveSantizeOptions(opts);
+export async function render(node: Node): Promise<string> {
   switch (node.type) {
-    case DOCUMENT_NODE: {
+    case DOCUMENT_NODE:
       return Promise.all(
-        node.children.map((child: Node) => render(child, opts))
+        node.children.map((child: Node) => render(child))
       ).then((res) => res.join(""));
-    }
     case ELEMENT_NODE:
-      return renderElement(node, {
-        components: opts.components ?? {},
-        sanitize,
-      });
-    case TEXT_NODE: {
+      return renderElement(node);
+    case TEXT_NODE:
       return `${node.value}`;
-    }
-    case COMMENT_NODE: {
-      if (sanitize.allowComments) {
-        return `<!--${node.value}-->`;
-      } else {
-        return "";
-      }
-    }
-    case DOCTYPE_NODE: {
+    case COMMENT_NODE:
+      return `<!--${node.value}-->`;
+    case DOCTYPE_NODE:
       return `<!${node.value}>`;
-    }
   }
 }
 
-export async function transform(
-  input: string | ReturnType<typeof html>,
-  opts: RenderOptions = {}
-) {
-  return render(parse(input), opts);
+export interface Transformer {
+  (node: Node): Node | Promise<Node>;
+}
+
+export async function transform(markup: string|Node, transformers: Transformer[] = []): Promise<string> {
+  const doc = (typeof markup === 'string') ? parse(markup) : markup;
+  let newDoc = doc;
+  for (const transform of transformers) {
+    newDoc = await transform(newDoc);
+  }
+  return render(newDoc)
 }

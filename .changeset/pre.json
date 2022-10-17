@@ -1,0 +1,8 @@
+{
+  "mode": "pre",
+  "tag": "next",
+  "initialVersions": {
+    "ultrahtml": "0.3.3"
+  },
+  "changesets": []
+}

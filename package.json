@@ -12,23 +12,32 @@
   },
   "homepage": "https://github.com/natemoo-re/ultrahtml#README",
   "scripts": {
-    "build:index": "esbuild src/index.ts --bundle --format=esm --minify --sourcemap=external --target=node14 --outfile=dist/index.js",
-    "build:selector": "esbuild src/selector.ts --format=esm --minify --bundle --external:./index.js --sourcemap=external --target=node14 --outfile=dist/selector.js",
-    "build": "pnpm run build:index && pnpm run build:selector && tsc -p .",
+    "build": "node scripts/build.js && tsc -p .",
     "lint": "prettier \"**/*.{js,ts,md}\"",
     "dev": "vitest",
     "test": "vitest run"
   },
   "files": [
     "selector.d.ts",
+    "transform.d.ts",
+    "transformers",
     "dist",
     "CHANGELOG.md"
   ],
   "exports": {
-    ".": "./dist/index.js",
-    "./selector": "./dist/selector.js",
-    "./dist/*": "./dist/*",
-    "./package.json": "./package.json"
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./package.json": "./package.json",
+    "./selector": {
+      "types": "./dist/selector.d.ts",
+      "import": "./dist/selector.js"
+    },
+    "./transformers/*": {
+      "types": "./dist/transformers/*.d.ts",
+      "import": "./dist/transformers/*.js"
+    }
   },
   "keywords": [
     "html",
@@ -46,11 +55,18 @@
   },
   "packageManager": "pnpm@7.6.0",
   "devDependencies": {
-    "parsel-js": "^1.0.2",
     "@changesets/cli": "^2.18.1",
+    "@types/stylis": "^4.0.2",
+    "chalk": "^5.1.2",
     "esbuild": "^0.14.51",
+    "globby": "^13.1.2",
+    "gzip-size": "^7.0.0",
     "markdown-it": "^13.0.1",
+    "npm-run-all": "^4.1.5",
+    "parsel-js": "^1.0.2",
     "prettier": "^2.5.1",
+    "pretty-bytes": "^6.0.0",
+    "stylis": "^4.1.2",
     "typescript": "^4.7.4",
     "vitest": "^0.20.2"
   }
