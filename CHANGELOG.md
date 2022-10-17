@@ -1,5 +1,11 @@
 # ultrahtml
 
+## 1.0.0-next.2
+
+### Patch Changes
+
+- 401b13a: Fix JSX runtime types
+
 ## 1.0.0-next.1
 
 ### Patch Changes
