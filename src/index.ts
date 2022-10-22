@@ -399,8 +399,8 @@ export interface Transformer {
 export async function transform(markup: string|Node, transformers: Transformer[] = []): Promise<string> {
   const doc = (typeof markup === 'string') ? parse(markup) : markup;
   let newDoc = doc;
-  for (const transform of transformers) {
-    newDoc = await transform(newDoc);
+  for (const t of transformers) {
+    newDoc = await t(newDoc);
   }
   return render(newDoc)
 }
