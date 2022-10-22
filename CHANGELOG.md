@@ -1,5 +1,11 @@
 # ultrahtml
 
+## 1.0.0-next.4
+
+### Patch Changes
+
+- d29a0e2: Add `resolveAsset` option to the `inline` transformer
+
 ## 1.0.0-next.3
 
 ### Patch Changes
