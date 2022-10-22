@@ -1,23 +1,42 @@
-import { walkSync, ELEMENT_NODE, TEXT_NODE, Node } from "../index.js";
+import { walkSync, ELEMENT_NODE, TEXT_NODE, Node, ElementNode } from "../index.js";
 import { querySelectorAll, specificity } from "../selector.js";
 import { compile } from "stylis";
 
-export default function inline() {
-  return (doc: Node): Node => {
+export interface InlineOptions {
+  resolveAsset: (node: ElementNode) => void|string|Promise<string|void>;
+}
+export default function inline(opts?: InlineOptions) {
+  return async (doc: Node): Promise<Node> => {
     const style: string[] = [];
     const actions: (() => void)[] = [];
+    const promises: Promise<void>[] = [];
     walkSync(doc, (node: Node, parent?: Node) => {
-      if (node.type === ELEMENT_NODE && node.name === "style") {
-        style.push(
-          node.children
-            .map((c: Node) => (c.type === TEXT_NODE ? c.value : ""))
-            .join("")
-        );
-        actions.push(() => {
-          parent!.children = parent!.children.filter((c: Node) => c !== node);
-        });
+      if (node.type === ELEMENT_NODE) {
+        if (opts?.resolveAsset && node.name === 'link' && node.attributes.rel === 'stylesheet') {
+          // ensure order is maintained
+          const i = style.push('');
+          promises.push(Promise.resolve(opts.resolveAsset(node)).then(css => {
+            if (css) {
+              style[i] = css;
+              actions.push(() => {
+                parent!.children = parent!.children.filter((c: Node) => c !== node);
+              });
+            }
+          }))
+        }
+        if (node.name === "style") {
+          style.push(
+            node.children
+              .map((c: Node) => (c.type === TEXT_NODE ? c.value : ""))
+              .join("")
+          );
+          actions.push(() => {
+            parent!.children = parent!.children.filter((c: Node) => c !== node);
+          });
+        }
       }
     });
+    await Promise.all(promises);
     for (const action of actions) {
       action();
     }
@@ -72,4 +91,7 @@ export default function inline() {
     }
     return doc;
   };
+}
+function isHttpURL(href: string): boolean {
+  return href.startsWith('http://') || href.startsWith('https://');
 }
