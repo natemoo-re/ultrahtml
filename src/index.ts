@@ -83,7 +83,23 @@ export function h(
 }
 export const Fragment = Symbol("Fragment");
 
-const VOID_TAGS = { img: 1, br: 1, hr: 1, meta: 1, link: 1, base: 1, input: 1 };
+const VOID_TAGS = new Set<string>([
+  "area",
+  "base",
+  "br",
+  "col",
+  "embed",
+  "hr",
+  "img",
+  "input",
+  "keygen",
+  "link",
+  "meta",
+  "param",
+  "source",
+  "track",
+  "wbr",
+]);
 const SPLIT_ATTRS_RE = /([\@\.a-z0-9_\:\-]*)\s*?=?\s*?(['"]?)(.*?)\2\s+/gim;
 const DOM_PARSER_RE =
   /(?:<(\/?)([a-zA-Z][a-zA-Z0-9\:-]*)(?:\s([^>]*?))?((?:\s*\/)?)>|(<\!\-\-)([\s\S]*?)(\-\->)|(<\!)([\s\S]*?)(>))/gm;
@@ -192,10 +208,7 @@ export function parse(input: string | ReturnType<typeof html>): any {
       };
       tags.push(tag);
       tag.parent.children.push(tag);
-      if (
-        (token[4] && token[4].indexOf("/") > -1) ||
-        VOID_TAGS.hasOwnProperty(tag.name)
-      ) {
+      if ((token[4] && token[4].indexOf("/") > -1) || VOID_TAGS.has(tag.name)) {
         tag.loc[1] = tag.loc[0];
         tag.isSelfClosingTag = true;
       } else {
@@ -359,17 +372,14 @@ async function renderElement(node: Node): Promise<string> {
   const { name, attributes = {} } = node;
   const children = await Promise.all(
     node.children.map((child: Node) => render(child))
-  ).then((res) => res.join(""))
+  ).then((res) => res.join(""));
   if (RenderFn in node) {
-    const value = await (node as any)[RenderFn](
-      attributes,
-      mark(children)
-    );
+    const value = await (node as any)[RenderFn](attributes, mark(children));
     if (value && (value as any)[HTMLString]) return value.value;
     return escapeHTML(String(value));
   }
   if (name === Fragment) return children;
-  if (VOID_TAGS.hasOwnProperty(name)) {
+  if (VOID_TAGS.has(name)) {
     return `<${node.name}${attrs(attributes).value}>`;
   }
   return `<${node.name}${attrs(attributes).value}>${children}</${node.name}>`;
@@ -396,11 +406,14 @@ export interface Transformer {
   (node: Node): Node | Promise<Node>;
 }
 
-export async function transform(markup: string|Node, transformers: Transformer[] = []): Promise<string> {
-  const doc = (typeof markup === 'string') ? parse(markup) : markup;
+export async function transform(
+  markup: string | Node,
+  transformers: Transformer[] = []
+): Promise<string> {
+  const doc = typeof markup === "string" ? parse(markup) : markup;
   let newDoc = doc;
   for (const t of transformers) {
     newDoc = await t(newDoc);
   }
-  return render(newDoc)
+  return render(newDoc);
 }
