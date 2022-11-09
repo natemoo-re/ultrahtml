@@ -59,26 +59,27 @@ const output = await render(ast);
 
 #### `transform`
 
-The `transform` function provides a straight-forward way to swap in-place elements (or Components) and update them with a new value. It is a shortcut that combines `parse` and `render`.
-
-> **Note**
-> By default, `transform` will sanitize your markup, removing any `script` tags. Pass `{ sanitize: false }` to disable this behavior.
+The `transform` function provides a straight-forward way to modify any markup. Sanitize content, swap in-place elements/Components, and more using a set of built-in transformers, or write your own custom transformer.
 
 ```js
 import { transform, html } from "ultrahtml";
+import swap from "ultrahtml/transformers/swap";
+import sanitize from "ultrahtml/transformers/sanitize";
 
-const output = await transform(`<h1>Hello world!</h1>`, {
-  components: {
-    h1: (props, children) => html`<h1 class="ultra">${children}</h1>`,
-  },
-});
+const output = await transform(`<h1>Hello world!</h1>`, [
+  swap({
+    h1: "h2",
+    h3: (props, children) => html`<h2 class="ultra">${children}</h2>`,
+  }),
+  sanitize({ allowElements: ["h1", "h2", "h3"] }),
+]);
 
-console.log(output); // <h1 class="ultra">Hello world!</h1>
+console.log(output); // <h2>Hello world!</h2>
 ```
 
 #### Sanitization
 
-`ultrahtml` implements an extension of the [HTML Sanitizer API](https://developer.mozilla.org/en-US/docs/Web/API/Sanitizer/Sanitizer). This is enabled by default, but can be turned off by passing `{ sanitize: false }` to `render` and `transform`.
+`ultrahtml/transformers/sanitize` implements an extension of the [HTML Sanitizer API](https://developer.mozilla.org/en-US/docs/Web/API/Sanitizer/Sanitizer).
 
 | Option              | Type                       | Default      | Description                                                                                                                                                                                                                               |
 | ------------------- | -------------------------- | ------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
