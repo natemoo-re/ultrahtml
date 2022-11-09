@@ -12,7 +12,7 @@ export default function inline(opts?: InlineOptions) {
     const promises: Promise<void>[] = [];
     walkSync(doc, (node: Node, parent?: Node) => {
       if (node.type === ELEMENT_NODE) {
-        if (opts?.resolveAsset && node.name === 'link' && node.attributes.rel === 'stylesheet') {
+        if (typeof opts?.resolveAsset === 'function' && node.name === 'link' && node.attributes.rel === 'stylesheet') {
           // ensure order is maintained
           const i = style.push('');
           promises.push(Promise.resolve(opts.resolveAsset(node)).then(css => {
