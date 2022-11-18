@@ -48,4 +48,14 @@ describe("sanitize", () => {
     const output = await transform(input, [sanitize({ dropAttributes: { yes: ['*'] }, allowAttributes: { yes: ['h1'] } })]);
     expect(output).toEqual('<h1 yes="way">Hello world!</h1><h2></h2>');
   });
+  it("gracefully handles invalid drop", async () => {
+    const input = `<a href=\"https://example.com\">Hello world!</a>`;
+    const output = await transform(input, [sanitize({ dropAttributes: { nonexistent: ["a"] }})]);
+    expect(output).toEqual(`<a href=\"https://example.com\">Hello world!</a>`);
+  });
+  it("gracefully handles invalid allow", async () => {
+    const input = `<a href=\"https://example.com\">Hello world!</a>`;
+    const output = await transform(input, [sanitize({ allowAttributes: { nonexistent: ["a"] }})]);
+    expect(output).toEqual(`<a href=\"https://example.com\">Hello world!</a>`);
+  });
 });

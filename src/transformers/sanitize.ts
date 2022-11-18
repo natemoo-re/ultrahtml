@@ -85,14 +85,14 @@ function sanitizeAttributes(
     if (
       (sanitize.allowAttributes?.[key] &&
         sanitize.allowAttributes?.[key].includes(node.name)) ||
-      sanitize.allowAttributes?.[key].includes("*")
+      sanitize.allowAttributes?.[key]?.includes("*")
     ) {
       continue;
     }
     if (
       (sanitize.dropAttributes?.[key] &&
         sanitize.dropAttributes?.[key].includes(node.name)) ||
-      sanitize.dropAttributes?.[key].includes("*")
+      sanitize.dropAttributes?.[key]?.includes("*")
     ) {
       delete attrs[key];
     }
