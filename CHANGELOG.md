@@ -1,5 +1,12 @@
 # ultrahtml
 
+## 1.0.1
+
+### Patch Changes
+
+- b136e51: Fix unhandled edge case with `sanitize` transformer
+- dce0b68: Fix style and script elements having their contents parsed as HTML
+
 ## 1.0.0
 
 ### Major Changes
