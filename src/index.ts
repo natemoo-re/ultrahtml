@@ -100,6 +100,7 @@ const VOID_TAGS = new Set<string>([
   "track",
   "wbr",
 ]);
+const RAW_TAGS = new Set<string>(["script", "style"]);
 const SPLIT_ATTRS_RE = /([\@\.a-z0-9_\:\-]*)\s*?=?\s*?(['"]?)(.*?)\2\s+/gim;
 const DOM_PARSER_RE =
   /(?:<(\/?)([a-zA-Z][a-zA-Z0-9\:-]*)(?:\s([^>]*?))?((?:\s*\/)?)>|(<\!\-\-)([\s\S]*?)(\-\->)|(<\!)([\s\S]*?)(>))/gm;
@@ -152,7 +153,13 @@ export function parse(input: string | ReturnType<typeof html>): any {
     bStart = token[5] || token[8];
     bText = token[6] || token[9];
     bEnd = token[7] || token[10];
-    if (bStart === "<!--") {
+    if (RAW_TAGS.has(parent.name) && token[2] !== parent.name) {
+      i = DOM_PARSER_RE.lastIndex - token[0].length;
+      if (parent.children.length > 0) {
+        parent.children[0].value += token[0];
+      }
+      continue;
+    } else if (bStart === "<!--") {
       i = DOM_PARSER_RE.lastIndex - token[0].length;
       tag = {
         type: COMMENT_NODE,
@@ -411,7 +418,9 @@ export async function transform(
   transformers: Transformer[] = []
 ): Promise<string> {
   if (!Array.isArray(transformers)) {
-    throw new Error(`Invalid second argument for \`transform\`! Expected \`Transformer[]\` but got \`${typeof transformers}\``)
+    throw new Error(
+      `Invalid second argument for \`transform\`! Expected \`Transformer[]\` but got \`${typeof transformers}\``
+    );
   }
   const doc = typeof markup === "string" ? parse(markup) : markup;
   let newDoc = doc;
