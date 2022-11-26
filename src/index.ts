@@ -161,6 +161,9 @@ export function parse(input: string | ReturnType<typeof html>): any {
       continue;
     } else if (bStart === "<!--") {
       i = DOM_PARSER_RE.lastIndex - token[0].length;
+      if (RAW_TAGS.has(parent.name)) {
+        continue;
+      }
       tag = {
         type: COMMENT_NODE,
         value: bText,
@@ -200,6 +203,9 @@ export function parse(input: string | ReturnType<typeof html>): any {
       tag.parent.children.push(tag);
     } else if (token[1] !== "/") {
       commitTextNode();
+      if (RAW_TAGS.has(parent.name)) {
+        continue;
+      }
       tag = {
         type: ELEMENT_NODE,
         name: token[2] + "",
