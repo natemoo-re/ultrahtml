@@ -1,5 +1,11 @@
 # ultrahtml
 
+## 1.0.2
+
+### Patch Changes
+
+- c7a1ef6: Fix edge case with `<script>` parsing
+
 ## 1.0.1
 
 ### Patch Changes
