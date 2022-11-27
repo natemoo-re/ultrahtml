@@ -32,6 +32,21 @@ describe("script", () => {
     })
     expect(meta).toEqual(11);
   })
+  it("works with <script> inside script", async () => {
+    const input = `<script>const a = "<script>"</script>`
+    const output = await render(parse(input));
+    expect(output).toEqual(input);
+  })
+  it("works with <any> inside script", async () => {
+    const input = `<script>const a = "<any>"</script>`
+    const output = await render(parse(input));
+    expect(output).toEqual(input);
+  })
+  it("works with <\\/script> inside script", async () => {
+    const input = `<script>const a = "<\\/script>"</script>`
+    const output = await render(parse(input));
+    expect(output).toEqual(input);
+  })
 });
 
 describe("style", () => {
@@ -45,4 +60,5 @@ describe("style", () => {
     const output = await render(parse(input));
     expect(output).toEqual(input);
   });
+  
 });

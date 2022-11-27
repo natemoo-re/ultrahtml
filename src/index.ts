@@ -204,28 +204,34 @@ export function parse(input: string | ReturnType<typeof html>): any {
     } else if (token[1] !== "/") {
       commitTextNode();
       if (RAW_TAGS.has(parent.name)) {
+        lastIndex = DOM_PARSER_RE.lastIndex;
+        commitTextNode();
         continue;
-      }
-      tag = {
-        type: ELEMENT_NODE,
-        name: token[2] + "",
-        attributes: splitAttrs(token[3]),
-        parent,
-        children: [],
-        loc: [
-          {
-            start: DOM_PARSER_RE.lastIndex - token[0].length,
-            end: DOM_PARSER_RE.lastIndex,
-          },
-        ] as any,
-      };
-      tags.push(tag);
-      tag.parent.children.push(tag);
-      if ((token[4] && token[4].indexOf("/") > -1) || VOID_TAGS.has(tag.name)) {
-        tag.loc[1] = tag.loc[0];
-        tag.isSelfClosingTag = true;
       } else {
-        parent = tag;
+        tag = {
+          type: ELEMENT_NODE,
+          name: token[2] + "",
+          attributes: splitAttrs(token[3]),
+          parent,
+          children: [],
+          loc: [
+            {
+              start: DOM_PARSER_RE.lastIndex - token[0].length,
+              end: DOM_PARSER_RE.lastIndex,
+            },
+          ] as any,
+        };
+        tags.push(tag);
+        tag.parent.children.push(tag);
+        if (
+          (token[4] && token[4].indexOf("/") > -1) ||
+          VOID_TAGS.has(tag.name)
+        ) {
+          tag.loc[1] = tag.loc[0];
+          tag.isSelfClosingTag = true;
+        } else {
+          parent = tag;
+        }
       }
     } else {
       commitTextNode();
