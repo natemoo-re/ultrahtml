@@ -1,5 +1,11 @@
 # ultrahtml
 
+## 1.0.3
+
+### Patch Changes
+
+- d7cb17d: Fix another edge case with text inside script/styles
+
 ## 1.0.2
 
 ### Patch Changes
