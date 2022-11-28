@@ -1,5 +1,11 @@
 # ultrahtml
 
+## 1.0.4
+
+### Patch Changes
+
+- c5799aa: Update attribute handling to account for attributes with newlines
+
 ## 1.0.3
 
 ### Patch Changes
