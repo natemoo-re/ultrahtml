@@ -101,7 +101,7 @@ const VOID_TAGS = new Set<string>([
   "wbr",
 ]);
 const RAW_TAGS = new Set<string>(["script", "style"]);
-const SPLIT_ATTRS_RE = /([\@\.a-z0-9_\:\-]*)\s*?=?\s*?(['"]?)(.*?)\2\s+/gim;
+const SPLIT_ATTRS_RE = /([\@\.a-z0-9_\:\-]*)\s*?=?\s*?(['"]?)([\w\W]*?)\2\s+/gim;
 const DOM_PARSER_RE =
   /(?:<(\/?)([a-zA-Z][a-zA-Z0-9\:-]*)(?:\s([^>]*?))?((?:\s*\/)?)>|(<\!\-\-)([\s\S]*?)(\-\->)|(<\!)([\s\S]*?)(>))/gm;
 

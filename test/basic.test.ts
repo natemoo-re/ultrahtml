@@ -70,4 +70,26 @@ describe("attributes", () => {
     } = parse(`<div test a="b" c="1"></div>`);
     expect(attributes).toMatchObject({ test: "", a: "b", c: "1" });
   });
+  it("with linebreaks", async () => {
+    const {
+      children: [{ attributes }],
+    } = parse(`<div a="1
+2
+3"></div>`);
+    expect(attributes).toMatchObject({ a: "1\n2\n3" });
+  });
+  it("with single quote", async () => {
+    const {
+      children: [{ attributes }],
+    } = parse(`<div a="nate'
+s"></div>`);
+    expect(attributes).toMatchObject({ a: "nate'\ns" });
+  });
+  it("with escaped double quote", async () => {
+    const {
+      children: [{ attributes }],
+    } = parse(`<div a="\"never
+more\""></div>`);
+    expect(attributes).toMatchObject({ a: "\"never\nmore\"" });
+  });
 });
