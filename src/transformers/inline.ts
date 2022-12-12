@@ -4,7 +4,7 @@ import { compile } from "stylis";
 
 export interface InlineOptions {}
 export default function inline(opts?: InlineOptions) {
-  return (doc: Node): Promise<Node> => {
+  return (doc: Node): Node => {
     const style: string[] = [];
     const actions: (() => void)[] = [];
     const promises: Promise<void>[] = [];
