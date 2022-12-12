@@ -1,5 +1,11 @@
 # ultrahtml
 
+## 1.1.0
+
+### Minor Changes
+
+- d910619: Remove `resolveAsset` option from `inline` transformer, making it synchronous again.
+
 ## 1.0.4
 
 ### Patch Changes
