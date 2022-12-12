@@ -2,28 +2,14 @@ import { walkSync, ELEMENT_NODE, TEXT_NODE, Node, ElementNode } from "../index.j
 import { querySelectorAll, specificity } from "../selector.js";
 import { compile } from "stylis";
 
-export interface InlineOptions {
-  resolveAsset: (node: ElementNode) => void|string|Promise<string|void>;
-}
+export interface InlineOptions {}
 export default function inline(opts?: InlineOptions) {
-  return async (doc: Node): Promise<Node> => {
+  return (doc: Node): Promise<Node> => {
     const style: string[] = [];
     const actions: (() => void)[] = [];
     const promises: Promise<void>[] = [];
     walkSync(doc, (node: Node, parent?: Node) => {
       if (node.type === ELEMENT_NODE) {
-        if (typeof opts?.resolveAsset === 'function' && node.name === 'link' && node.attributes.rel === 'stylesheet') {
-          // ensure order is maintained
-          const i = style.push('');
-          promises.push(Promise.resolve(opts.resolveAsset(node)).then(css => {
-            if (css) {
-              style[i] = css;
-              actions.push(() => {
-                parent!.children = parent!.children.filter((c: Node) => c !== node);
-              });
-            }
-          }))
-        }
         if (node.name === "style") {
           style.push(
             node.children
@@ -36,7 +22,6 @@ export default function inline(opts?: InlineOptions) {
         }
       }
     });
-    await Promise.all(promises);
     for (const action of actions) {
       action();
     }

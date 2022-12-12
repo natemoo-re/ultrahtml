@@ -21,6 +21,17 @@ describe("inline", () => {
     const output = await transform(input, [inline()]);
     expect(output).toEqual(`<div style="color:blue;">Hello world</div>`);
   });
+
+  it("inline styles with class", async () => {
+    const input = `<div class="cool">Hello world</div>
+      <style>
+        .cool {
+          color: red;
+        }
+      </style>`;
+    const output = await transform(input, [inline()]).trim();
+    expect(output).toEqual(`<div class="cool" style="color:red;">Hello world</div>`);
+  });
 });
 
 describe("inline jsx", () => {
