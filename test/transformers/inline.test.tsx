@@ -29,8 +29,8 @@ describe("inline", () => {
           color: red;
         }
       </style>`;
-    const output = await transform(input, [inline()]).trim();
-    expect(output).toEqual(`<div class="cool" style="color:red;">Hello world</div>`);
+    const output = await transform(input, [inline()]);
+    expect(output.trim()).toEqual(`<div class="cool" style="color:red;">Hello world</div>`);
   });
 });
 
