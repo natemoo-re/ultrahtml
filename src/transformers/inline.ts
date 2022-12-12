@@ -2,12 +2,15 @@ import { walkSync, ELEMENT_NODE, TEXT_NODE, Node, ElementNode } from "../index.j
 import { querySelectorAll, specificity } from "../selector.js";
 import { compile } from "stylis";
 
-export interface InlineOptions {}
+export interface InlineOptions {
+  /** Emit `style` attributes as objects rather than strings. */
+  useObjectSyntax?: boolean;
+}
 export default function inline(opts?: InlineOptions) {
+  const { useObjectSyntax = false } = opts ?? {};
   return (doc: Node): Node => {
-    const style: string[] = [];
+    const style: string[] = useObjectSyntax ? [':where([style]) {}'] : [];
     const actions: (() => void)[] = [];
-    const promises: Promise<void>[] = [];
     walkSync(doc, (node: Node, parent?: Node) => {
       if (node.type === ELEMENT_NODE) {
         if (node.name === "style") {
@@ -70,9 +73,13 @@ export default function inline(opts?: InlineOptions) {
         }
       }
       styleObj = Object.assign({}, rule, styleObj);
-      node.attributes.style = `${Object.entries(styleObj)
-        .map(([decl, value]) => `${decl}:${value.replace("!important", "")};`)
-        .join("")}`;
+      if (useObjectSyntax) {
+        node.attributes.style = styleObj;
+      } else {
+        node.attributes.style = `${Object.entries(styleObj)
+          .map(([decl, value]) => `${decl}:${value.replace("!important", "")};`)
+          .join("")}`;
+      }
     }
     return doc;
   };

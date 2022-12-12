@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
-import { h, Fragment, transform } from "../../src/index";
+import { h, Fragment, parse, transform } from "../../src/index";
 import inline from "../../src/transformers/inline";
-import { setTimeout as sleep } from 'timers/promises'
+import { setTimeout as sleep } from "timers/promises";
 
 describe("inline", () => {
   it("works with a simple input", async () => {
@@ -30,7 +30,9 @@ describe("inline", () => {
         }
       </style>`;
     const output = await transform(input, [inline()]);
-    expect(output.trim()).toEqual(`<div class="cool" style="color:red;">Hello world</div>`);
+    expect(output.trim()).toEqual(
+      `<div class="cool" style="color:red;">Hello world</div>`
+    );
   });
 });
 
@@ -67,6 +69,47 @@ describe("inline jsx", () => {
     );
     const output = await transform(input, [inline()]);
     expect(output).toEqual(`<div style="color:blue;">Hello world</div>`);
+  });
+});
+
+describe("object syntax", () => {
+  it("emits style as object", async () => {
+    const inliner = inline({ useObjectSyntax: true });
+    const input = `<div>Hello world</div><style>div { color: red; }</style>`;
+    const doc = await parse(input);
+    const output = inliner(doc);
+    expect(output.children[0].attributes.style).toEqual({ color: "red" });
+  });
+
+  it("emits plain style attribute as object", async () => {
+    const inliner = inline({ useObjectSyntax: true });
+    const input = `<div style="color: blue;">Hello world</div>`;
+    const doc = await parse(input);
+    const output = inliner(doc);
+    expect(output.children[0].attributes.style).toEqual({ color: "blue" });
+  });
+
+  it("works for complex properties", async () => {
+    const inliner = inline({ useObjectSyntax: true });
+    const input = `
+      <div>Hello world</div>
+      <style>
+        div {
+          background: linear-gradient(135deg, #ef629f, #eecda3);
+          display: flex;
+          width: 100%;
+          height: 100%;
+        }
+      </style>
+    `.trim();
+    const doc = await parse(input);
+    const output = inliner(doc);
+    expect(output.children[0].attributes.style).toEqual({
+      background: "linear-gradient(135deg, #ef629f, #eecda3)",
+      display: "flex",
+      width: "100%",
+      height: "100%",
+    });
   });
 });
 
