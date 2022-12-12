@@ -1,5 +1,11 @@
 # ultrahtml
 
+## 1.2.0
+
+### Minor Changes
+
+- 7792f5d: Add `useObjectSyntax` option to inline transformer. Note that this option is currently not compatible with `transform`
+
 ## 1.1.0
 
 ### Minor Changes
