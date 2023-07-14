@@ -3,6 +3,7 @@
   "type": "module",
   "version": "1.2.0",
   "types": "./dist/index.d.ts",
+  "main": "./dist/index.js",
   "repository": {
     "type": "git",
     "url": "https://github.com/natemoo-re/ultrahtml"
