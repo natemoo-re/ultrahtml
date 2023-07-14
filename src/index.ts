@@ -39,6 +39,7 @@ export interface ElementNode extends ParentNode {
   type: typeof ELEMENT_NODE;
   name: string;
   attributes: Record<string, string>;
+  isSelfClosingTag: boolean;
 }
 
 export interface TextNode extends LiteralNode {
@@ -75,6 +76,7 @@ export function h(
     ),
     parent: undefined as any,
     loc: [] as any,
+    isSelfClosingTag: false,
   };
   if (typeof type === "function") {
     __unsafeRenderFn(vnode, type);
@@ -214,6 +216,7 @@ export function parse(input: string | ReturnType<typeof html>): any {
           attributes: splitAttrs(token[3]),
           parent,
           children: [],
+          isSelfClosingTag: false,
           loc: [
             {
               start: DOM_PARSER_RE.lastIndex - token[0].length,
@@ -388,7 +391,7 @@ export function walkSync(node: Node, callback: VisitorSync): void {
 }
 
 async function renderElement(node: Node): Promise<string> {
-  const { name, attributes = {} } = node;
+  const { name, attributes = {}, isSelfClosingTag = false } = node;
   const children = await Promise.all(
     node.children.map((child: Node) => render(child))
   ).then((res) => res.join(""));
@@ -398,8 +401,8 @@ async function renderElement(node: Node): Promise<string> {
     return escapeHTML(String(value));
   }
   if (name === Fragment) return children;
-  if (VOID_TAGS.has(name)) {
-    return `<${node.name}${attrs(attributes).value}>`;
+  if (isSelfClosingTag || VOID_TAGS.has(name)) {
+    return `<${node.name}${attrs(attributes).value}${isSelfClosingTag ? ' /' : ''}>`;
   }
   return `<${node.name}${attrs(attributes).value}>${children}</${node.name}>`;
 }
