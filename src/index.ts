@@ -404,6 +404,36 @@ async function renderElement(node: Node): Promise<string> {
   return `<${node.name}${attrs(attributes).value}>${children}</${node.name}>`;
 }
 
+function renderElementSync(node: Node): string {
+  const { name, attributes = {} } = node;
+  const children = node.children.map((child: Node) => renderSync(child)).join("");
+  if (RenderFn in node) {
+    const value = (node as any)[RenderFn](attributes, mark(children));
+    if (value && (value as any)[HTMLString]) return value.value;
+    return escapeHTML(String(value));
+  }
+  if (name === Fragment) return children;
+  if (VOID_TAGS.has(name)) {
+    return `<${node.name}${attrs(attributes).value}>`;
+  }
+  return `<${node.name}${attrs(attributes).value}>${children}</${node.name}>`;
+}
+
+export function renderSync(node: Node): string {
+  switch (node.type) {
+    case DOCUMENT_NODE:
+      return node.children.map((child: Node) => renderSync(child)).join("");
+    case ELEMENT_NODE:
+      return renderElementSync(node);
+    case TEXT_NODE:
+      return `${node.value}`;
+    case COMMENT_NODE:
+      return `<!--${node.value}-->`;
+    case DOCTYPE_NODE:
+      return `<!${node.value}>`;
+  }
+}
+
 export async function render(node: Node): Promise<string> {
   switch (node.type) {
     case DOCUMENT_NODE:
