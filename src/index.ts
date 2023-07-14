@@ -106,14 +106,50 @@ const SPLIT_ATTRS_RE =
 const DOM_PARSER_RE =
 	/(?:<(\/?)([a-zA-Z][a-zA-Z0-9\:-]*)(?:\s([^>]*?))?((?:\s*\/)?)>|(<\!\-\-)([\s\S]*?)(\-\->)|(<\!)([\s\S]*?)(>))/gm;
 
+function isBalanced(str?: string, attr: boolean = false) {
+	if (!str) return true;
+	if (!attr && !/=\{/.test(str)) return true;
+	let track: Record<string, number> = {
+		'{': 0,
+		'(': 0,
+		'[': 0,
+	}
+	for (let i = 0; i < str.length; i++) {
+		const c = str[i];
+		if (track[c] !== undefined) {
+			track[c]++;
+		} else if (c === '}') {
+			track['{']--;
+		} else if (c === ')') {
+			track['(']--;
+		} else if (c === ']') {
+			track['[']--;
+		}
+	}
+	return Object.values(track).every(v => v === 0);
+}
 function splitAttrs(str?: string) {
 	let obj: Record<string, string> = {};
 	let token: any;
 	if (str) {
-		SPLIT_ATTRS_RE.lastIndex = 0;
-		str = ' ' + (str || '') + ' ';
+		str = " " + (str || "") + " ";
+		let pending = '';
 		while ((token = SPLIT_ATTRS_RE.exec(str))) {
-			if (token[0] === ' ') continue;
+			if (token[0] === " ") continue;
+			if (pending) {
+				obj[pending] += token[0];
+				if (isBalanced(obj[pending], true)) {
+					obj[pending] = obj[pending].trimEnd();
+					pending = '';
+				}
+				continue;
+			}
+			if (token[0] === " ") continue;
+			if (token[3][0] === '{' && !isBalanced(token[3], true)) {
+				pending = token[1];
+				obj[pending] = token[0].slice(token[1].length + 1);
+				continue;
+			}
 			obj[token[1]] = token[3];
 		}
 	}
@@ -140,12 +176,20 @@ export function parse(input: string | ReturnType<typeof html>): any {
 
 	let lastIndex = 0;
 	function commitTextNode() {
-		text = str.substring(lastIndex, DOM_PARSER_RE.lastIndex - token[0].length);
+		const start = lastIndex;
+		const end = DOM_PARSER_RE.lastIndex - token[0].length;
+		text = str.substring(start, end);
 		if (text) {
 			(parent as ParentNode).children.push({
 				type: TEXT_NODE,
 				value: text,
 				parent,
+				loc: [
+					{
+						start,
+						end
+					},
+				],
 			} as any);
 		}
 	}
@@ -160,7 +204,7 @@ export function parse(input: string | ReturnType<typeof html>): any {
 				parent.children[0].value += token[0];
 			}
 			continue;
-		} else if (bStart === '<!--') {
+		} else if (bStart === "<!--") {
 			i = DOM_PARSER_RE.lastIndex - token[0].length;
 			if (RAW_TAGS.has(parent.name)) {
 				continue;
@@ -182,7 +226,7 @@ export function parse(input: string | ReturnType<typeof html>): any {
 			} as any;
 			tags.push(tag);
 			(tag.parent as any).children.push(tag);
-		} else if (bStart === '<!') {
+		} else if (bStart === "<!") {
 			i = DOM_PARSER_RE.lastIndex - token[0].length;
 			tag = {
 				type: DOCTYPE_NODE,
@@ -199,19 +243,30 @@ export function parse(input: string | ReturnType<typeof html>): any {
 					},
 				],
 			};
-			// commitTextNode();
 			tags.push(tag);
 			tag.parent.children.push(tag);
-		} else if (token[1] !== '/') {
+		} else if (token[1] !== "/") {
 			commitTextNode();
 			if (RAW_TAGS.has(parent.name)) {
 				lastIndex = DOM_PARSER_RE.lastIndex;
 				commitTextNode();
 				continue;
 			} else {
+				// Ensure attr expressions are balanced
+				if (!isBalanced(token[3])) {
+					token[3] += '>'
+					let infiniteloop = 0;
+					while (!isBalanced(token[3])) {
+						if (infiniteloop === 999) throw new Error('Infinite loop detected!');
+						const chunk = str.substring(DOM_PARSER_RE.lastIndex, DOM_PARSER_RE.lastIndex + str.substring(DOM_PARSER_RE.lastIndex).indexOf('>'));
+						token[3] += chunk;
+						DOM_PARSER_RE.lastIndex += chunk.length + 1;
+						infiniteloop++;
+					}
+				}
 				tag = {
 					type: ELEMENT_NODE,
-					name: token[2] + '',
+					name: token[2] + "",
 					attributes: splitAttrs(token[3]),
 					parent,
 					children: [],
@@ -225,7 +280,7 @@ export function parse(input: string | ReturnType<typeof html>): any {
 				tags.push(tag);
 				tag.parent.children.push(tag);
 				if (
-					(token[4] && token[4].indexOf('/') > -1) ||
+					(token[4] && token[4].indexOf("/") > -1) ||
 					VOID_TAGS.has(tag.name)
 				) {
 					tag.loc[1] = tag.loc[0];
@@ -237,7 +292,7 @@ export function parse(input: string | ReturnType<typeof html>): any {
 		} else {
 			commitTextNode();
 			// Close parent node if end-tag matches
-			if (token[2] + '' === parent.name) {
+			if (token[2] + "" === parent.name) {
 				tag = parent;
 				parent = tag.parent!;
 				tag.loc.push({
@@ -255,7 +310,7 @@ export function parse(input: string | ReturnType<typeof html>): any {
 			}
 			// account for abuse of self-closing tags when an end-tag is also provided:
 			else if (
-				token[2] + '' === tags[tags.length - 1].name &&
+				token[2] + "" === tags[tags.length - 1].name &&
 				tags[tags.length - 1].isSelfClosingTag === true
 			) {
 				tag = tags[tags.length - 1];
@@ -268,11 +323,13 @@ export function parse(input: string | ReturnType<typeof html>): any {
 		lastIndex = DOM_PARSER_RE.lastIndex;
 	}
 	text = str.slice(lastIndex);
-	parent.children.push({
-		type: TEXT_NODE,
-		value: text,
-		parent,
-	});
+	if (text) {
+		parent.children.push({
+			type: TEXT_NODE,
+			value: text,
+			parent,
+		});
+	}
 	return doc;
 }
 
@@ -285,7 +342,7 @@ export interface VisitorSync {
 }
 
 class Walker {
-	constructor(private callback: Visitor) {}
+	constructor(private callback: Visitor) { }
 	async visit(node: Node, parent?: Node, index?: number): Promise<void> {
 		await this.callback(node, parent, index);
 		if (Array.isArray(node.children)) {
@@ -300,7 +357,7 @@ class Walker {
 }
 
 class WalkerSync {
-	constructor(private callback: VisitorSync) {}
+	constructor(private callback: VisitorSync) { }
 	visit(node: Node, parent?: Node, index?: number): void {
 		this.callback(node, parent, index);
 		if (Array.isArray(node.children)) {
@@ -350,9 +407,13 @@ function escapeHTML(str: string): string {
 	return str.replace(/[&<>]/g, (c) => ESCAPE_CHARS[c] || c);
 }
 export function attrs(attributes: Record<string, string>) {
-	let attrStr = '';
+	let attrStr = "";
 	for (const [key, value] of Object.entries(attributes)) {
-		attrStr += ` ${key}="${value}"`;
+		if (value[0] === '{') {
+			attrStr += ` ${key}=${value}`;
+		} else {
+			attrStr += ` ${key}="${value}"`;
+		}
 	}
 	return mark(attrStr, [HTMLString, AttrString]);
 }
