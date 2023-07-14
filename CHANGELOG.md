@@ -1,5 +1,15 @@
 # ultrahtml
 
+## 1.3.0
+
+### Minor Changes
+
+- 0556b19: Add `renderSync` export
+
+### Patch Changes
+
+- 3362aa2: Add `main` entrypoint
+
 ## 1.2.0
 
 ### Minor Changes
