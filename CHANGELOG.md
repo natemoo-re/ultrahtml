@@ -1,5 +1,15 @@
 # ultrahtml
 
+## 1.4.0
+
+### Minor Changes
+
+- 8bbaeef: Allow elements inside of `<svg>` to be self-closing for compactness
+
+### Patch Changes
+
+- 5715bc3: Fix `sanitize` transformer behavior when only using `allowElements`
+
 ## 1.3.0
 
 ### Minor Changes
