@@ -387,6 +387,17 @@ export function walkSync(node: Node, callback: VisitorSync): void {
   return walker.visit(node);
 }
 
+function canSelfClose(node: Node): boolean {
+  if (node.children.length === 0) {
+    let n: Node | undefined = node;
+    while (n = n.parent) {
+      if (n.name === 'svg') return true;
+    }
+  }
+  return false;
+}
+
+
 async function renderElement(node: Node): Promise<string> {
   const { name, attributes = {} } = node;
   const children = await Promise.all(
@@ -398,8 +409,9 @@ async function renderElement(node: Node): Promise<string> {
     return escapeHTML(String(value));
   }
   if (name === Fragment) return children;
-  if (VOID_TAGS.has(name)) {
-    return `<${node.name}${attrs(attributes).value}>`;
+  const isSelfClosing = canSelfClose(node);
+  if (isSelfClosing || VOID_TAGS.has(name)) {
+    return `<${node.name}${attrs(attributes).value}${isSelfClosing ? ' /' : ''}>`;
   }
   return `<${node.name}${attrs(attributes).value}>${children}</${node.name}>`;
 }
@@ -413,8 +425,9 @@ function renderElementSync(node: Node): string {
     return escapeHTML(String(value));
   }
   if (name === Fragment) return children;
-  if (VOID_TAGS.has(name)) {
-    return `<${node.name}${attrs(attributes).value}>`;
+  const isSelfClosing = canSelfClose(node);
+  if (isSelfClosing || VOID_TAGS.has(name)) {
+    return `<${node.name}${attrs(attributes).value}${isSelfClosing ? ' /' : ''}>`;
   }
   return `<${node.name}${attrs(attributes).value}>${children}</${node.name}>`;
 }
