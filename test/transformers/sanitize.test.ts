@@ -18,6 +18,11 @@ describe("sanitize", () => {
     const output = await transform(input, [sanitize({ allowElements: ['script'] })]);
     expect(output).toEqual('<script>console.log("pwnd")</script>');
   });
+  it("allow drops everything else", async () => {
+    const input = `<h1>Hello world!</h1><h4>This is not allowed</h4>`;
+    const output = await transform(input, [sanitize({ allowElements: ['h1', 'h2', 'h3'] })]);
+    expect(output).toEqual('<h1>Hello world!</h1>');
+  });
   it("drop script by default", async () => {
     const input = `<h1>Hello world!</h1><script>console.log("pwnd")</script>`;
     const output = await transform(input, [sanitize()]);

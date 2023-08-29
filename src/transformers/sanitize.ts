@@ -73,7 +73,8 @@ function getAction(
   }
   if (kind === "component" && !sanitize.allowComponents) return "drop";
   if (kind === "custom-element" && !sanitize.allowCustomElements) return "drop";
-  return "allow";
+
+  return (sanitize.allowElements?.length > 0) ? 'drop' : 'allow';
 }
 
 function sanitizeAttributes(
