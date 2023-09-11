@@ -15,7 +15,6 @@ specifiers:
   prettier: ^2.5.1
   pretty-bytes: ^6.0.0
   stylis: ^4.1.2
-  typescript: ^4.7.4
   vitest: ^0.20.2
 
 devDependencies:
@@ -33,7 +32,6 @@ devDependencies:
   prettier: 2.7.1
   pretty-bytes: 6.0.0
   stylis: 4.1.2
-  typescript: 4.7.4
   vitest: 0.20.2
 
 packages:
@@ -2115,12 +2113,6 @@ packages:
   /type-fest/0.8.1:
     resolution: {integrity: sha512-4dbzIzqvjtgiM5rw1k5rEHtBANKmdudhGyBEajN01fEyhaAIhsoKNy6y7+IN93IfpFtwY9iqi7kD+xwKhQsNJA==}
     engines: {node: '>=8'}
-    dev: true
-
-  /typescript/4.7.4:
-    resolution: {integrity: sha512-C0WQT0gezHuw6AdY1M2jxUO83Rjf0HP7Sk1DtXj6j1EwkQNZrHAg2XPWlq62oqEhYvONq5pkC2Y9oPljWToLmQ==}
-    engines: {node: '>=4.2.0'}
-    hasBin: true
     dev: true
 
   /typescript/5.2.2:
