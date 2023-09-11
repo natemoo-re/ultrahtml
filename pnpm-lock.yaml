@@ -11,7 +11,7 @@ specifiers:
   markdown-it: ^13.0.1
   media-query-fns: ^2.0.0
   npm-run-all: ^4.1.5
-  parsel-js: ^1.0.2
+  parsel-js: ^1.1.2
   prettier: ^2.5.1
   pretty-bytes: ^6.0.0
   stylis: ^4.1.2
@@ -28,7 +28,7 @@ devDependencies:
   markdown-it: 13.0.1
   media-query-fns: 2.0.0
   npm-run-all: 4.1.5
-  parsel-js: 1.0.2
+  parsel-js: 1.1.2
   prettier: 2.7.1
   pretty-bytes: 6.0.0
   stylis: 4.1.2
@@ -1647,8 +1647,8 @@ packages:
       lines-and-columns: 1.2.4
     dev: true
 
-  /parsel-js/1.0.2:
-    resolution: {integrity: sha512-G8Wzng7kxh8k6trrL5U5Fv25r7WJ/s4SEo8B6AF/5qSMq6PfptKXSWvBYw3s6eEXKFjWIsMc5hxuekht5XRbng==}
+  /parsel-js/1.1.2:
+    resolution: {integrity: sha512-D66DG2nKx4Yoq66TMEyCUHlR2STGqO7vsBrX7tgyS9cfQyO6XD5JyzOiflwmWN6a4wbUAqpmHqmrxlTQVGZcbA==}
     dev: true
 
   /path-exists/4.0.0:

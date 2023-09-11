@@ -1,4 +1,4 @@
-import { walkSync, ELEMENT_NODE, TEXT_NODE, Node, ElementNode } from "../index.js";
+import { walkSync, ELEMENT_NODE, TEXT_NODE, Node } from "../index.js";
 import { querySelectorAll, specificity } from "../selector.js";
 import { type Element as CSSEntry, compile } from "stylis";
 import { compileQuery, matches, type Environment } from 'media-query-fns';
@@ -100,9 +100,6 @@ export default function inline(opts?: Partial<InlineOptions>) {
     }
     return doc;
   };
-}
-function isHttpURL(href: string): boolean {
-  return href.startsWith('http://') || href.startsWith('https://');
 }
 
 type AlwaysDefinedValues = "widthPx" | "heightPx" | "deviceWidthPx" | "deviceHeightPx" | "dppx";
