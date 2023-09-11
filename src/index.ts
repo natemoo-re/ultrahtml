@@ -288,7 +288,7 @@ class Walker {
   async visit(node: Node, parent?: Node, index?: number): Promise<void> {
     await this.callback(node, parent, index);
     if (Array.isArray(node.children)) {
-      let promises = [];
+      let promises: Promise<void>[] = [];
       for (let i = 0; i < node.children.length; i++) {
         const child = node.children[i];
         promises.push(this.visit(child, node, i));

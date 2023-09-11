@@ -4,6 +4,7 @@
     "declaration": true,
     "emitDeclarationOnly": true,
     "strict": true,
+    "noImplicitAny": false,
     "moduleResolution": "NodeNext",
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
