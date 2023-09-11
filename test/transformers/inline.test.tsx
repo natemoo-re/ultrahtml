@@ -34,6 +34,44 @@ describe("inline", () => {
       `<div class="cool" style="color:red;">Hello world</div>`
     );
   });
+
+  it("inlines styles when @media is matched", async () => {
+    const input = `<div class="cool">Hello world</div>
+      <style>
+        .cool {
+          color: red;
+        }
+
+        @media (min-width: 960px) {
+          .cool {
+            color: green;
+          }
+        }
+      </style>`;
+    const output = await transform(input, [inline({ env: { width: 961, height: 1280 }})]);
+    expect(output.trim()).toEqual(
+      `<div class="cool" style="color:green;">Hello world</div>`
+    );
+  });
+
+  it("does not inline styles when @media cannot be matched", async () => {
+    const input = `<div class="cool">Hello world</div>
+      <style>
+        .cool {
+          color: red;
+        }
+
+        @media (min-width: 960px) {
+          .cool {
+            color: green;
+          }
+        }
+      </style>`;
+    const output = await transform(input, [inline({ env: { width: 959, height: 1280 }})]);
+    expect(output.trim()).toEqual(
+      `<div class="cool" style="color:red;">Hello world</div>`
+    );
+  });
 });
 
 describe("inline jsx", () => {
