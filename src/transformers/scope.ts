@@ -112,7 +112,7 @@ function scopeSelector(selector: string, hash: string): string {
       default: return `${node.content}:where([data-scope="${hash}"])`
     }
   }
-  return scope(ast);
+  return scope(ast!);
 }
 
 function scopeCSS(css: string, hash: string) {
