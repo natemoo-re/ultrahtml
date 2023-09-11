@@ -1,5 +1,11 @@
 # ultrahtml
 
+## 1.5.1
+
+### Patch Changes
+
+- a989b5a: Bundle type definitions in `.d.ts` files
+
 ## 1.5.0
 
 ### Minor Changes
