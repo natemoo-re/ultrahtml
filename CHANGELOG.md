@@ -1,5 +1,11 @@
 # ultrahtml
 
+## 1.5.2
+
+### Patch Changes
+
+- 244be0a: Update `parsel-js` to latest
+
 ## 1.5.1
 
 ### Patch Changes
