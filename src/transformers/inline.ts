@@ -1,12 +1,14 @@
 import { walkSync, ELEMENT_NODE, TEXT_NODE, Node, ElementNode } from "../index.js";
 import { querySelectorAll, specificity } from "../selector.js";
-import { compile } from "stylis";
+import { type Element as CSSEntry, compile } from "stylis";
+import { compileQuery, matches, type Environment } from 'media-query-fns';
 
 export interface InlineOptions {
   /** Emit `style` attributes as objects rather than strings. */
-  useObjectSyntax?: boolean;
+  useObjectSyntax: boolean;
+  env: Partial<Environment> & { width: number, height: number };
 }
-export default function inline(opts?: InlineOptions) {
+export default function inline(opts?: Partial<InlineOptions>) {
   const { useObjectSyntax = false } = opts ?? {};
   return (doc: Node): Node => {
     const style: string[] = useObjectSyntax ? [':where([style]) {}'] : [];
@@ -31,8 +33,9 @@ export default function inline(opts?: InlineOptions) {
     const styles = style.join("\n");
     const css = compile(styles);
     const selectors = new Map<string, Record<string, string>>();
-    for (const rule of css) {
-      if (rule.type === "rule") {
+
+    function applyRule(rule: CSSEntry) {
+      if (rule.type === 'rule') {
         const rules = Object.fromEntries(
           (rule.children as unknown as Element[])
             .map((child: any) => [child.props, child.children])
@@ -41,9 +44,23 @@ export default function inline(opts?: InlineOptions) {
           const value = Object.assign(selectors.get(selector) ?? {}, rules);
           selectors.set(selector, value);
         }
+      } else if (rule.type === '@media' && opts?.env) {
+        const env = getEnvironment(opts.env);
+        const args = Array.isArray(rule.props) ? rule.props : [rule.props];
+        const queries = args.map(arg => compileQuery(arg))
+        for (const query of queries) {
+          if (matches(query, env)) {
+            for (const child of rule.children) {
+              applyRule(child as CSSEntry)
+            }
+            return;
+          }
+        }
       }
     }
-
+    for (const rule of css) {
+      applyRule(rule);
+    }
     const rules = new Map<Node, Record<string, string>>();
     for (const [selector, styles] of Array.from(selectors).sort(([a], [b]) => {
       const $a = specificity(a);
@@ -86,4 +103,18 @@ export default function inline(opts?: InlineOptions) {
 }
 function isHttpURL(href: string): boolean {
   return href.startsWith('http://') || href.startsWith('https://');
+}
+
+type AlwaysDefinedValues = "widthPx" | "heightPx" | "deviceWidthPx" | "deviceHeightPx" | "dppx";
+type ResolvedEnvironment = Omit<Partial<Environment>, AlwaysDefinedValues> & Record<AlwaysDefinedValues, number>;
+function getEnvironment(baseEnv: InlineOptions['env']): ResolvedEnvironment {
+  const { width, height, dppx = 1, widthPx = width, heightPx = height, deviceWidthPx = width * dppx, deviceHeightPx = height * dppx, ...env } = baseEnv;
+  return {
+    widthPx,
+    heightPx,
+    deviceWidthPx,
+    deviceHeightPx,
+    dppx,
+    ...env
+  }
 }

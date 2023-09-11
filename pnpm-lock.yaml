@@ -8,6 +8,7 @@ specifiers:
   globby: ^13.1.2
   gzip-size: ^7.0.0
   markdown-it: ^13.0.1
+  media-query-fns: ^2.0.0
   npm-run-all: ^4.1.5
   parsel-js: ^1.0.2
   prettier: ^2.5.1
@@ -24,6 +25,7 @@ devDependencies:
   globby: 13.1.2
   gzip-size: 7.0.0
   markdown-it: 13.0.1
+  media-query-fns: 2.0.0
   npm-run-all: 4.1.5
   parsel-js: 1.0.2
   prettier: 2.7.1
@@ -1431,6 +1433,18 @@ packages:
 
   /mdurl/1.0.1:
     resolution: {integrity: sha512-/sKlQJCBYVY9Ers9hqzKou4H6V5UWc/M59TH2dvkt+84itfnq7uFOMLpOiOS4ujvHP4etln18fmIxA5R5fll0g==}
+    dev: true
+
+  /media-query-fns/2.0.0:
+    resolution: {integrity: sha512-HAIvh3utK+RMkNT/3Cc3fZuA2WJj4nISBHcmcXuSBaosB3slwl/iVjO/coroelDjOgKFgpe4oAoy7OO2sCgDog==}
+    engines: {node: '>=16.0.0 || ^14.13.1'}
+    dependencies:
+      media-query-parser: 3.0.0-beta.1
+    dev: true
+
+  /media-query-parser/3.0.0-beta.1:
+    resolution: {integrity: sha512-LWNtMYGpFmRnOYWVG0KNHKz8grWc7bHym9KTecl2cU5dzUv50qiafcfqeLmV6t2j4ZhnAWfTcQ++ejjyGvLdsg==}
+    engines: {node: '>=16.0.0 || ^14.13.1'}
     dev: true
 
   /memorystream/0.3.1:
