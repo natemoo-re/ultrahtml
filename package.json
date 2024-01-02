@@ -64,7 +64,7 @@
     "@changesets/cli": "^2.18.1",
     "@types/stylis": "^4.0.2",
     "chalk": "^5.1.2",
-    "dts-bundle-generator": "^8.0.1",
+    "dts-bundle-generator": "^9.2.1",
     "esbuild": "^0.14.51",
     "globby": "^13.1.2",
     "gzip-size": "^7.0.0",
