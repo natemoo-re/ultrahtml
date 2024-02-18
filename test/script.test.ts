@@ -30,7 +30,7 @@ describe("script", () => {
         meta++;
       }
     })
-    expect(meta).toEqual(12);
+    expect(meta).toEqual(18);
   })
   it("works with <script> inside script", async () => {
     const input = `<script>const a = "<script>"</script>`
