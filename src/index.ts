@@ -103,16 +103,52 @@ const VOID_TAGS = new Set<string>([
 const RAW_TAGS = new Set<string>(["script", "style"]);
 const SPLIT_ATTRS_RE = /([\@\.a-z0-9_\:\-]*)\s*?=?\s*?(['"]?)([\s\S]*?)\2\s+/gim;
 const DOM_PARSER_RE =
-  /(?:<(\/?)([a-zA-Z][a-zA-Z0-9\:-]*)(?:\s([^>]*?))?((?:\s*\/)?)>|(<\!\-\-)([\s\S]*?)(\-\->)|(<\!)([\s\S]*?)(>))/gm;
+  /(?:<(\/?)([a-zA-Z][a-zA-Z0-9\:-]*)(?:\s([^>]*?))?((?:\s*\/)??)>|(<\!\-\-)([\s\S]*?)(\-\->)|(<\!)([\s\S]*?)(>))/gm;
 
+function isBalanced(str?: string, attr: boolean = false) {
+  if (!str) return true;
+  if (!attr && !/=\{/.test(str)) return true;
+  let track: Record<string, number> = {
+    '{': 0,
+    '(': 0,
+    '[': 0,
+  }
+  for (let i = 0; i < str.length; i++) {
+    const c = str[i];
+    if (track[c] !== undefined) {
+      track[c]++;
+    } else if (c === '}') {
+      track['{']--;
+    } else if (c === ')') {
+      track['(']--;
+    } else if (c === ']') {
+      track['[']--;
+    }
+  }
+  return Object.values(track).every(v => v === 0);
+}
 function splitAttrs(str?: string) {
   let obj: Record<string, string> = {};
   let token: any;
   if (str) {
-    SPLIT_ATTRS_RE.lastIndex = 0;
     str = " " + (str || "") + " ";
+    let pending = '';
     while ((token = SPLIT_ATTRS_RE.exec(str))) {
       if (token[0] === " ") continue;
+      if (pending) {
+        obj[pending] += token[0];
+        if (isBalanced(obj[pending], true)) {
+          obj[pending] = obj[pending].trimEnd();
+          pending = '';
+        }
+        continue;
+      }
+      if (token[0] === " ") continue;
+      if (token[3][0] === '{' && !isBalanced(token[3], true)) {
+        pending = token[1];
+        obj[pending] = token[0].slice(token[1].length + 1);
+        continue;
+      }
       obj[token[1]] = token[3];
     }
   }
@@ -139,12 +175,20 @@ export function parse(input: string | ReturnType<typeof html>): any {
 
   let lastIndex = 0;
   function commitTextNode() {
-    text = str.substring(lastIndex, DOM_PARSER_RE.lastIndex - token[0].length);
+    const start = lastIndex;
+    const end = DOM_PARSER_RE.lastIndex - token[0].length;
+    text = str.substring(start, end);
     if (text) {
       (parent as ParentNode).children.push({
         type: TEXT_NODE,
         value: text,
         parent,
+        loc: [
+          {
+            start,
+            end
+          },
+        ],
       } as any);
     }
   }
@@ -198,7 +242,6 @@ export function parse(input: string | ReturnType<typeof html>): any {
           },
         ],
       };
-      // commitTextNode();
       tags.push(tag);
       tag.parent.children.push(tag);
     } else if (token[1] !== "/") {
@@ -208,6 +251,18 @@ export function parse(input: string | ReturnType<typeof html>): any {
         commitTextNode();
         continue;
       } else {
+        // Ensure attr expressions are balanced
+        if (!isBalanced(token[3])) {
+          token[3] += '>'
+          let infiniteloop = 0;
+          while (!isBalanced(token[3])) {
+            if (infiniteloop === 999) throw new Error('Infinite loop detected!');
+            const chunk = str.substring(DOM_PARSER_RE.lastIndex, DOM_PARSER_RE.lastIndex + str.substring(DOM_PARSER_RE.lastIndex).indexOf('>'));
+            token[3] += chunk;
+            DOM_PARSER_RE.lastIndex += chunk.length + 1;
+            infiniteloop++;
+          }
+        }
         tag = {
           type: ELEMENT_NODE,
           name: token[2] + "",
@@ -267,11 +322,13 @@ export function parse(input: string | ReturnType<typeof html>): any {
     lastIndex = DOM_PARSER_RE.lastIndex;
   }
   text = str.slice(lastIndex);
-  parent.children.push({
-    type: TEXT_NODE,
-    value: text,
-    parent,
-  });
+  if (text) {
+    parent.children.push({
+      type: TEXT_NODE,
+      value: text,
+      parent,
+    });
+  }
   return doc;
 }
 
@@ -351,7 +408,11 @@ function escapeHTML(str: string): string {
 export function attrs(attributes: Record<string, string>) {
   let attrStr = "";
   for (const [key, value] of Object.entries(attributes)) {
-    attrStr += ` ${key}="${value}"`;
+    if (value[0] === '{') {
+      attrStr += ` ${key}=${value}`;
+    } else {
+      attrStr += ` ${key}="${value}"`;
+    }
   }
   return mark(attrStr, [HTMLString, AttrString]);
 }
