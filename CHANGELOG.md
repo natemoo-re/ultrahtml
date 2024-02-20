@@ -1,5 +1,13 @@
 # ultrahtml
 
+## 1.5.3
+
+### Patch Changes
+
+- ebc97e0: upgrades `dts-bundle-generator` to `9.2.1`, fixing an issue with `.d.ts`
+  generation which led methods prefixed with two underscores to be
+  incorrectly made private in the generated declaration file.
+
 ## 1.5.2
 
 ### Patch Changes
@@ -26,7 +34,7 @@
 
   const output = await transform(input, [
     // Acts as if the screen is 960px wide and 1280px tall
-    inline({ env: { width: 960, height: 1280 } })
+    inline({ env: { width: 960, height: 1280 } }),
   ]);
   ```
 
@@ -104,7 +112,7 @@
 
   await transform(markup, {
     components: { h1: "h2" },
-    sanitize: { allowElements: ["h1", "h2", "h3"] }
+    sanitize: { allowElements: ["h1", "h2", "h3"] },
   });
   ```
 
@@ -117,7 +125,7 @@
 
   await transform(markup, [
     swap({ h1: "h2" }),
-    sanitize({ allowElements: ["h1", "h2", "h3"] })
+    sanitize({ allowElements: ["h1", "h2", "h3"] }),
   ]);
   ```
 
@@ -184,7 +192,7 @@
 
   await transform(markup, {
     components: { h1: "h2" },
-    sanitize: { allowElements: ["h1", "h2", "h3"] }
+    sanitize: { allowElements: ["h1", "h2", "h3"] },
   });
   ```
 
@@ -197,7 +205,7 @@
 
   await transform(markup, [
     swap({ h1: "h2" }),
-    sanitize({ allowElements: ["h1", "h2", "h3"] })
+    sanitize({ allowElements: ["h1", "h2", "h3"] }),
   ]);
   ```
 
