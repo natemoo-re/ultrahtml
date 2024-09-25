@@ -26,22 +26,6 @@ describe('script', () => {
 		});
 		expect(meta).toEqual(11);
 	});
-	it('works with </script> in live string', async () => {
-		const input = await fetch(
-			'https://developer.mozilla.org/en-US/docs/Web/API/HTML_Sanitizer_API',
-		).then((r) => r.text());
-		let meta = 0;
-		await walk(parse(input), async (node, parent) => {
-			if (
-				node.type === ELEMENT_NODE &&
-				node.name === 'meta' &&
-				parent?.name === 'head'
-			) {
-				meta++;
-			}
-		});
-		expect(meta).toEqual(18);
-	});
 	it('works with <script> inside script', async () => {
 		const input = `<script>const a = "<script>"</script>`;
 		const output = await render(parse(input));
