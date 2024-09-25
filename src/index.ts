@@ -1,3 +1,5 @@
+import { isBalanced } from "./balancer.js";
+
 export type Node =
 	| DocumentNode
 	| ElementNode
@@ -104,30 +106,7 @@ const RAW_TAGS = new Set<string>(['script', 'style']);
 const SPLIT_ATTRS_RE =
 	/([\@\.a-z0-9_\:\-]*)\s*?=?\s*?(['"]?)([\s\S]*?)\2\s+/gim;
 const DOM_PARSER_RE =
-	/(?:<(\/?)([a-zA-Z][a-zA-Z0-9\:-]*)(?:\s([^>]*?))?((?:\s*\/)?)>|(<\!\-\-)([\s\S]*?)(\-\->)|(<\!)([\s\S]*?)(>))/gm;
-
-function isBalanced(str?: string, attr: boolean = false) {
-	if (!str) return true;
-	if (!attr && !/=\{/.test(str)) return true;
-	let track: Record<string, number> = {
-		'{': 0,
-		'(': 0,
-		'[': 0,
-	}
-	for (let i = 0; i < str.length; i++) {
-		const c = str[i];
-		if (track[c] !== undefined) {
-			track[c]++;
-		} else if (c === '}') {
-			track['{']--;
-		} else if (c === ')') {
-			track['(']--;
-		} else if (c === ']') {
-			track['[']--;
-		}
-	}
-	return Object.values(track).every(v => v === 0);
-}
+	/(?:<(\/?)([a-zA-Z][a-zA-Z0-9\:-]*)(?:\s([^>]*?))?((?:\s*\/)??)>|(<\!\-\-)([\s\S]*?)(\-\->)|(<\!)([\s\S]*?)(>))/gm;
 function splitAttrs(str?: string) {
 	let obj: Record<string, string> = {};
 	let token: any;
@@ -138,14 +117,14 @@ function splitAttrs(str?: string) {
 			if (token[0] === " ") continue;
 			if (pending) {
 				obj[pending] += token[0];
-				if (isBalanced(obj[pending], true)) {
+				if (isBalanced(obj[pending])) {
 					obj[pending] = obj[pending].trimEnd();
 					pending = '';
 				}
 				continue;
 			}
 			if (token[0] === " ") continue;
-			if (token[3][0] === '{' && !isBalanced(token[3], true)) {
+			if (token[3][0] === '{' && !isBalanced(token[3])) {
 				pending = token[1];
 				obj[pending] = token[0].slice(token[1].length + 1);
 				continue;
