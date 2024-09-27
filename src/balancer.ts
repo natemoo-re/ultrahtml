@@ -12,6 +12,8 @@ export function isBalanced(sourceCode = ''): boolean {
             /'(?:[^'\\]|\\.)*'|"(?:[^"\\]|\\.)*"/g,
             // regex literals, handling escaped forward slashes
             /\/(?:[^\/\\]|\\.)*\/[gimsuy]*/g,
+            // Handle escaped brackets outside of strings and regexes
+            /\\[()[{}\]]/g,
         ]
         let result = code;
         for (const pattern of patterns) {

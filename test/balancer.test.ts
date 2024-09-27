@@ -19,6 +19,13 @@ describe('isBalanced', () => {
     expect(isBalanced('([)]')).toBe(false);
   });
 
+  test('Escaped brackets', () => {
+    expect(isBalanced('\\(\\{\\[')).toBe(true);
+    expect(isBalanced('\\(\\)\\[\\]\\{\\}')).toBe(true);
+    expect(isBalanced('(\\{\\[)')).toBe(true);
+    expect(isBalanced('this\\(is\\{balanced\\[')).toBe(true);
+  });
+
   test('Brackets in strings', () => {
     expect(isBalanced('"()"')).toBe(true);
     expect(isBalanced("'()'")).toBe(true);
@@ -40,6 +47,23 @@ describe('isBalanced', () => {
   test('Regular expressions', () => {
     expect(isBalanced('/\\(/')).toBe(true);
     expect(isBalanced('const regex = /\\[/g')).toBe(true);
+  });
+
+  test('Escaped brackets in strings', () => {
+    expect(isBalanced('const str = "\\(\\)\\[\\]\\{\\}";')).toBe(true);
+    expect(isBalanced("const str = '\\(\\)\\[\\]\\{\\}';")).toBe(true);
+  });
+
+  test('Escaped quotes in strings', () => {
+    expect(isBalanced('const str = "He said \\"Hello\\" and left.";')).toBe(true);
+    expect(isBalanced("const str = 'It\\'s a nice day';")).toBe(true);
+  });
+
+  test('Multi-line strings', () => {
+    expect(isBalanced(`
+      const str = "This is a \\
+      multi-line string with (brackets)";
+    `)).toBe(true);
   });
 
   test('Complex code snippets', () => {
