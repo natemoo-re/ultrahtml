@@ -233,14 +233,19 @@ export function parse(input: string | ReturnType<typeof html>): any {
 			} else {
 				// Ensure attr expressions are balanced
 				if (!isBalanced(token[3])) {
-					token[3] += '>'
-					let infiniteloop = 0;
+					const max = token[3].length + str.slice(DOM_PARSER_RE.lastIndex).length;
 					while (!isBalanced(token[3])) {
-						if (infiniteloop === 999) throw new Error('Infinite loop detected!');
-						const chunk = str.substring(DOM_PARSER_RE.lastIndex, DOM_PARSER_RE.lastIndex + str.substring(DOM_PARSER_RE.lastIndex).indexOf('>'));
+						if (token[3].length > max) {
+							// TODO: better error stacktrace
+							throw new Error(`Syntax error!\n${token[3]}`);
+						}
+						const gtIndex = str.substring(DOM_PARSER_RE.lastIndex).indexOf('>');
+						if (gtIndex != -1) {
+							token[3] += '>'
+						}
+						const chunk = str.substring(DOM_PARSER_RE.lastIndex, DOM_PARSER_RE.lastIndex + gtIndex);
 						token[3] += chunk;
 						DOM_PARSER_RE.lastIndex += chunk.length + 1;
-						infiniteloop++;
 					}
 				}
 				tag = {
