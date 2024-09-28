@@ -45,7 +45,11 @@
 			"import": "./dist/jsx-runtime/index.js"
 		}
 	},
-	"keywords": ["html", "template", "sanitize"],
+	"keywords": [
+		"html",
+		"template",
+		"sanitize"
+	],
 	"author": {
 		"name": "Nate Moore",
 		"email": "nate@natemoo.re",
@@ -62,7 +66,7 @@
 		"@types/stylis": "^4.2.6",
 		"chalk": "^5.3.0",
 		"dts-bundle-generator": "^9.5.1",
-		"esbuild": "^0.14.54",
+		"esbuild": "^0.24.0",
 		"globby": "^13.2.2",
 		"gzip-size": "^7.0.0",
 		"markdown-it": "^13.0.2",
