@@ -88,8 +88,8 @@ s"></div>`);
 	it('with escaped double quote', async () => {
 		const {
 			children: [{ attributes }],
-		} = parse(`<div a="\"never
-more\""></div>`);
-		expect(attributes).toMatchObject({ a: '"never\nmore"' });
+		} = parse(`<div a="&quot;never
+more&quot;"></div>`);
+		expect(attributes).toMatchObject({ a: '&quot;never\nmore&quot;' });
 	});
 });

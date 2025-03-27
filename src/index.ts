@@ -101,20 +101,74 @@ const VOID_TAGS = new Set<string>([
 	'wbr',
 ]);
 const RAW_TAGS = new Set<string>(['script', 'style']);
-const SPLIT_ATTRS_RE =
-	/([\@\.a-z0-9_\:\-]*)\s*?=?\s*?(['"]?)([\s\S]*?)\2\s+/gim;
 const DOM_PARSER_RE =
 	/(?:<(\/?)([a-zA-Z][a-zA-Z0-9\:-]*)(?:\s([^>]*?))?((?:\s*\/)?)>|(<\!\-\-)([\s\S]*?)(\-\->)|(<\!)([\s\S]*?)(>))/gm;
 
+const ATTR_KEY_IDENTIFIER = /[\@\.a-z0-9_\:\-]/i;
+
 function splitAttrs(str?: string) {
 	let obj: Record<string, string> = {};
-	let token: any;
 	if (str) {
-		SPLIT_ATTRS_RE.lastIndex = 0;
-		str = ' ' + (str || '') + ' ';
-		while ((token = SPLIT_ATTRS_RE.exec(str))) {
-			if (token[0] === ' ') continue;
-			obj[token[1]] = token[3];
+		let state: 'none' | 'key' | 'value' = 'none';
+		let currentKey: string | undefined;
+		let currentValue: string = '';
+		let tokenStartIndex: number | undefined;
+		let valueDelimiter: '"' | "'" | undefined;
+		for (let currentIndex = 0; currentIndex < str.length; currentIndex++) {
+			const currentChar = str[currentIndex];
+
+			if (state === 'none') {
+				if (ATTR_KEY_IDENTIFIER.test(currentChar)) {
+					// add attribute
+					if (currentKey) {
+						obj[currentKey] = currentValue;
+						currentKey = undefined;
+						currentValue = '';
+					}
+
+					tokenStartIndex = currentIndex;
+					state = 'key';
+				} else if (currentChar === '=' && currentKey) {
+					state = 'value';
+				}
+			} else if (state === 'key') {
+				if (!ATTR_KEY_IDENTIFIER.test(currentChar)) {
+					currentKey = str.substring(tokenStartIndex!, currentIndex);
+					if (currentChar === '=') {
+						state = 'value';
+					} else {
+						state = 'none';
+					}
+				}
+			} else {
+				if (
+					currentChar === valueDelimiter &&
+					currentIndex > 0 &&
+					str[currentIndex - 1] !== '\\'
+				) {
+					if (valueDelimiter) {
+						currentValue = str.substring(tokenStartIndex!, currentIndex);
+						valueDelimiter = undefined;
+						state = 'none';
+					}
+				} else if (
+					(currentChar === '"' || currentChar === "'") &&
+					!valueDelimiter
+				) {
+					tokenStartIndex = currentIndex + 1;
+					valueDelimiter = currentChar;
+				}
+			}
+		}
+		if (
+			state === 'key' &&
+			tokenStartIndex != undefined &&
+			tokenStartIndex < str.length
+		) {
+			currentKey = str.substring(tokenStartIndex, str.length);
+		}
+		if (currentKey) {
+			obj[currentKey] = currentValue;
 		}
 	}
 	return obj;
@@ -411,7 +465,9 @@ async function renderElement(node: Node): Promise<string> {
 	if (name === Fragment) return children;
 	const isSelfClosing = canSelfClose(node);
 	if (isSelfClosing || VOID_TAGS.has(name)) {
-		return `<${node.name}${attrs(attributes).value}${isSelfClosing ? ' /' : ''}>`;
+		return `<${node.name}${attrs(attributes).value}${
+			isSelfClosing ? ' /' : ''
+		}>`;
 	}
 	return `<${node.name}${attrs(attributes).value}>${children}</${node.name}>`;
 }
@@ -429,7 +485,9 @@ function renderElementSync(node: Node): string {
 	if (name === Fragment) return children;
 	const isSelfClosing = canSelfClose(node);
 	if (isSelfClosing || VOID_TAGS.has(name)) {
-		return `<${node.name}${attrs(attributes).value}${isSelfClosing ? ' /' : ''}>`;
+		return `<${node.name}${attrs(attributes).value}${
+			isSelfClosing ? ' /' : ''
+		}>`;
 	}
 	return `<${node.name}${attrs(attributes).value}>${children}</${node.name}>`;
 }
