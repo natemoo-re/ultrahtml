@@ -15,6 +15,13 @@ describe('sanitize', () => {
 		]);
 		expect(output).toEqual('Hello world!');
 	});
+	it('block with multiple elements', async () => {
+		const input = `<h1>Hello <strong>world!</strong></h1>`;
+		const output = await transform(input, [
+			sanitize({ blockElements: ['h1', 'strong'] }),
+		]);
+		expect(output).toEqual('Hello world!');
+	});
 	it('allow', async () => {
 		const input = `<script>console.log("pwnd")</script>`;
 		const output = await transform(input, [
