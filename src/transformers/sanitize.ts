@@ -76,13 +76,8 @@ function getAction(
 	if (kind === 'component' && !sanitize.allowComponents) return 'drop';
 	if (kind === 'custom-element' && !sanitize.allowCustomElements) return 'drop';
 	if (sanitize.unblockElements) {
-		if (sanitize.unblockElements.find((n) => n === name)) {
-			return 'allow';
-		} else {
-			return 'block';
-		}
+		return sanitize.unblockElements.find((n) => n === name) ? 'allow' : 'block';
 	}
-	
 	return sanitize.allowElements?.length > 0 ? 'drop' : 'allow';
 }
 
