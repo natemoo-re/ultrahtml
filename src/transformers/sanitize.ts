@@ -141,8 +141,9 @@ export default function sanitize(opts?: SanitizeOptions) {
 					return;
 			}
 		});
-		for (const action of actions) {
-			action();
+		// Execute actions in reverse order
+		for (let i = actions.length - 1; i >= 0; i--) {
+			actions[i]();
 		}
 		return doc;
 	};
