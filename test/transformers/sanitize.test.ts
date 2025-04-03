@@ -29,6 +29,22 @@ describe('sanitize', () => {
 		]);
 		expect(output).toEqual('<script>console.log("pwnd")</script>');
 	});
+	describe('unblock', () => {
+		it('empty unblock array blocks all elements', async () => {
+			const input = `<h1>Hello <strong>world!</strong></h1>`;
+			const output = await transform(input, [
+				sanitize({ unblockElements: [] }),
+			]);
+			expect(output).toEqual('Hello world!');
+		});
+		it('unblock array blocks unlisted elements', async () => {
+			const input = `<h1>Hello <strong>world!</strong></h1>`;
+			const output = await transform(input, [
+				sanitize({ unblockElements: ['strong'] }),
+			]);
+			expect(output).toEqual('Hello <strong>world!</strong>');
+		});
+	});
 	it('allow drops everything else', async () => {
 		const input = `<h1>Hello world!</h1><h4>This is not allowed</h4>`;
 		const output = await transform(input, [
