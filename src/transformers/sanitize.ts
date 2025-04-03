@@ -3,7 +3,7 @@ import { ElementNode, ELEMENT_NODE, Node, walkSync } from '../index.js';
 export interface SanitizeOptions {
 	/** An Array of strings indicating elements that the sanitizer should not remove. All elements not in the array will be dropped. */
 	allowElements?: string[];
-	/** An Array of strings indicating elements that the sanitizer should not remove, all other elements are removed while keeping their child content. */
+	/** An Array of strings indicating elements that the sanitizer should not remove. All elements not in the array will be removed while keeping their child content. */
 	unblockElements?: string[];
 	/** An Array of strings indicating elements that the sanitizer should remove, but keeping their child elements. */
 	blockElements?: string[];
@@ -76,7 +76,7 @@ function getAction(
 	if (kind === 'component' && !sanitize.allowComponents) return 'drop';
 	if (kind === 'custom-element' && !sanitize.allowCustomElements) return 'drop';
 	if (sanitize.unblockElements) {
-		return sanitize.unblockElements.find((n) => n === name) ? 'allow' : 'block';
+		return sanitize.unblockElements.some((n) => n === name) ? 'allow' : 'block';
 	}
 	return sanitize.allowElements?.length > 0 ? 'drop' : 'allow';
 }
@@ -145,7 +145,7 @@ export default function sanitize(opts?: SanitizeOptions) {
 					return;
 			}
 		});
-		// Execute actions in reverse order
+		// Execute actions in reverse order so that children are mutated before parents.
 		for (let i = actions.length - 1; i >= 0; i--) {
 			actions[i]();
 		}
