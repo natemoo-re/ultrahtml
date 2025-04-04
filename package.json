@@ -55,7 +55,7 @@
 	"volta": {
 		"node": "18.20.4"
 	},
-	"packageManager": "pnpm@7.6.0",
+	"packageManager": "pnpm@10.7.1",
 	"devDependencies": {
 		"@biomejs/biome": "1.9.2",
 		"@changesets/cli": "^2.27.8",
