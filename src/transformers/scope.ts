@@ -1,146 +1,164 @@
 import type { ElementNode } from '../index.js';
-import { walkSync, ELEMENT_NODE, TEXT_NODE, Node, render } from "../index.js";
-import { matches } from "../selector.js";
-import { serialize, compile, middleware, stringify } from "stylis";
+import { walkSync, ELEMENT_NODE, TEXT_NODE, Node, render } from '../index.js';
+import { matches } from '../selector.js';
+import { serialize, compile, middleware, stringify } from 'stylis';
 import { AST, parse } from 'parsel-js';
 
 export interface ScopeOptions {
-  hash?: string;
-  attribute?: string;
+	hash?: string;
+	attribute?: string;
 }
 export default function scope(opts: ScopeOptions = {}) {
-  return async (doc: Node): Promise<Node> => {
-    const hash = opts.hash ?? shorthash(await render(doc));
-    const actions: (() => void)[] = [];
-    let hasStyle = false;
-    const selectors = new Set<string>();
-    const nodes = new Set<ElementNode>();
-    walkSync(doc, (node: Node) => {
-      if (node.type === ELEMENT_NODE && node.name === "style") {
-        if (!opts.attribute || (hasAttribute(node, opts.attribute))) {
-          hasStyle = true;
-          if (opts.attribute) {
-            delete node.attributes[opts.attribute];
-          }
-          for (const selector of getSelectors(node.children[0].value)) {
-            selectors.add(selector);
-          }
-        }
-      }
-      if (node.type === ELEMENT_NODE) {
-        nodes.add(node);
-      }
-    });
-    if (hasStyle) {
-      walkSync(doc, (node: Node) => {
-        if (node.type === ELEMENT_NODE) {
-          actions.push(() => scopeElement(node, hash, selectors))
-          if (node.name === 'style') {
-            actions.push(() => {
-              node.children = node.children.map((c: Node) => {
-                if (c.type !== TEXT_NODE) return c;
-                c.value = scopeCSS(c.value, hash);
-                if (c.value === '') {
-                  node.parent.children = node.parent.children.filter((s: Node) => s !== node);
-                }
-                return c;
-              })
-            });
-          }
-        }
-      })
-    }
-    for (const action of actions) {
-      action();
-    }
-    
-    return doc;
-  };
+	return async (doc: Node): Promise<Node> => {
+		const hash = opts.hash ?? shorthash(await render(doc));
+		const actions: (() => void)[] = [];
+		let hasStyle = false;
+		const selectors = new Set<string>();
+		const nodes = new Set<ElementNode>();
+		walkSync(doc, (node: Node) => {
+			if (node.type === ELEMENT_NODE && node.name === 'style') {
+				if (!opts.attribute || hasAttribute(node, opts.attribute)) {
+					hasStyle = true;
+					if (opts.attribute) {
+						delete node.attributes[opts.attribute];
+					}
+					for (const selector of getSelectors(node.children[0].value)) {
+						selectors.add(selector);
+					}
+				}
+			}
+			if (node.type === ELEMENT_NODE) {
+				nodes.add(node);
+			}
+		});
+		if (hasStyle) {
+			walkSync(doc, (node: Node) => {
+				if (node.type === ELEMENT_NODE) {
+					actions.push(() => scopeElement(node, hash, selectors));
+					if (node.name === 'style') {
+						actions.push(() => {
+							node.children = node.children.map((c: Node) => {
+								if (c.type !== TEXT_NODE) return c;
+								c.value = scopeCSS(c.value, hash);
+								if (c.value === '') {
+									node.parent.children = node.parent.children.filter(
+										(s: Node) => s !== node,
+									);
+								}
+								return c;
+							});
+						});
+					}
+				}
+			});
+		}
+		for (const action of actions) {
+			action();
+		}
+
+		return doc;
+	};
 }
 
 const NEVER_SCOPED = new Set([
-  "base",
-  "font",
-  "frame",
-  "frameset",
-  "head",
-  "link",
-  "meta",
-  "noframes",
-  "noscript",
-  "script",
-  "style",
-  "title",
-])
+	'base',
+	'font',
+	'frame',
+	'frameset',
+	'head',
+	'link',
+	'meta',
+	'noframes',
+	'noscript',
+	'script',
+	'style',
+	'title',
+]);
 
 function hasAttribute(node: ElementNode, name: string) {
-  if (name in node.attributes) {
-    return node.attributes[name] !== 'false';
-  }
-  return false;
+	if (name in node.attributes) {
+		return node.attributes[name] !== 'false';
+	}
+	return false;
 }
 
 function scopeElement(node: ElementNode, hash: string, selectors: Set<string>) {
-  const { name } = node;
-  if (!name) return;
-  if (name.length < 1) return;
-  if (NEVER_SCOPED.has(name)) return;
-  if (node.attributes['data-scope']) return;
-  for (const selector of selectors) {
-    if (matches(node, selector)) {
-      node.attributes['data-scope'] = hash;
-      return; 
-    }
-  }
+	const { name } = node;
+	if (!name) return;
+	if (name.length < 1) return;
+	if (NEVER_SCOPED.has(name)) return;
+	if (node.attributes['data-scope']) return;
+	for (const selector of selectors) {
+		if (matches(node, selector)) {
+			node.attributes['data-scope'] = hash;
+			return;
+		}
+	}
 }
 
 function scopeSelector(selector: string, hash: string): string {
-  const ast = parse(selector);
-  const scope = (node: AST): string => {
-    switch (node.type) {
-      case 'pseudo-class': {
-        if (node.name === 'root') return node.content;
-        if (node.name === 'global') return node.argument!;
-        return `${node.content}:where([data-scope="${hash}"])`;
-      }
-      case 'compound': return `${selector}:where([data-scope="${hash}"])`
-      case 'complex': {
-        const { left, right, combinator } = node;
-        return `${scope(left)}${combinator}${scope(right)}`
-      }
-      case 'list': return node.list.map(s => scope(s)).join(' ');
-      default: return `${node.content}:where([data-scope="${hash}"])`
-    }
-  }
-  return scope(ast!);
+	const ast = parse(selector);
+	const scope = (node: AST): string => {
+		switch (node.type) {
+			case 'pseudo-class': {
+				if (node.name === 'root') return node.content;
+				if (node.name === 'global') return node.argument!;
+				return `${node.content}:where([data-scope="${hash}"])`;
+			}
+			case 'compound':
+				return `${selector}:where([data-scope="${hash}"])`;
+			case 'complex': {
+				const { left, right, combinator } = node;
+				return `${scope(left)}${combinator}${scope(right)}`;
+			}
+			case 'list':
+				return node.list.map((s) => scope(s)).join(' ');
+			default:
+				return `${node.content}:where([data-scope="${hash}"])`;
+		}
+	};
+	return scope(ast!);
 }
 
 function scopeCSS(css: string, hash: string) {
-  return serialize(compile(css), middleware([(element) => {
-    if (element.type === 'rule') {
-      if (Array.isArray(element.props)) {
-        element.props = element.props.map(prop => scopeSelector(prop, hash))
-      } else {
-        element.props = scopeSelector(element.props, hash);
-      }
-    }
-  }, stringify]));
+	return serialize(
+		compile(css),
+		middleware([
+			(element) => {
+				if (element.type === 'rule') {
+					if (Array.isArray(element.props)) {
+						element.props = element.props.map((prop) =>
+							scopeSelector(prop, hash),
+						);
+					} else {
+						element.props = scopeSelector(element.props, hash);
+					}
+				}
+			},
+			stringify,
+		]),
+	);
 }
 
 function getSelectors(css: string) {
-  const selectors = new Set<string>();
-  serialize(compile(css), middleware([(element) => {
-    if (element.type === 'rule') {
-      if (Array.isArray(element.props)) {
-        for (const p of element.props) {
-          selectors.add(p);
-        }
-      } else {
-        selectors.add(element.props);
-      }
-    }
-  }]));
-  return Array.from(selectors);
+	const selectors = new Set<string>();
+	serialize(
+		compile(css),
+		middleware([
+			(element) => {
+				if (element.type === 'rule') {
+					if (Array.isArray(element.props)) {
+						for (const p of element.props) {
+							selectors.add(p);
+						}
+					} else {
+						selectors.add(element.props);
+					}
+				}
+			},
+		]),
+	);
+	return Array.from(selectors);
 }
 
 /**
@@ -174,7 +192,8 @@ function getSelectors(css: string) {
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-const dictionary = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXY';
+const dictionary =
+	'0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXY';
 const binary = dictionary.length;
 
 // refer to: http://werxltd.com/wp/2010/05/13/javascript-implementation-of-javas-string-hashcode-method/
@@ -210,4 +229,3 @@ function shorthash(text: string) {
 
 	return sign + result;
 }
-
