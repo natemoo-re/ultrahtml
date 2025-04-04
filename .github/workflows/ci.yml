@@ -23,8 +23,7 @@ jobs:
         with:
           node-version: 18
           cache: "pnpm"
-      - if: ${{ steps.cache-node.outputs.cache-hit != 'true' }}
-        run: pnpm install
+      - run: pnpm install
       - run: pnpm run build
       - run: pnpm run test
       - uses: changesets/action@v1
