@@ -1,8 +1,10 @@
-import type { ElementNode } from '../index.js';
-import { walkSync, ELEMENT_NODE, TEXT_NODE, Node, render } from '../index.js';
+import type { AST } from 'parsel-js';
+import type { ElementNode, Node } from '../index.js';
+
+import { parse } from 'parsel-js';
+import { compile, middleware, serialize, stringify } from 'stylis';
+import { ELEMENT_NODE, TEXT_NODE, render, walkSync } from '../index.js';
 import { matches } from '../selector.js';
-import { serialize, compile, middleware, stringify } from 'stylis';
-import { AST, parse } from 'parsel-js';
 
 export interface ScopeOptions {
 	hash?: string;
