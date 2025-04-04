@@ -1,7 +1,7 @@
 {
 	"name": "ultrahtml",
 	"type": "module",
-	"version": "1.5.3",
+	"version": "1.6.0",
 	"types": "./dist/index.d.ts",
 	"main": "./dist/index.js",
 	"repository": {
@@ -45,7 +45,11 @@
 			"import": "./dist/jsx-runtime/index.js"
 		}
 	},
-	"keywords": ["html", "template", "sanitize"],
+	"keywords": [
+		"html",
+		"template",
+		"sanitize"
+	],
 	"author": {
 		"name": "Nate Moore",
 		"email": "nate@natemoo.re",
@@ -56,7 +60,9 @@
 		"node": "18.20.4"
 	},
 	"pnpm": {
-		"onlyBuiltDependencies": ["esbuild"]
+		"onlyBuiltDependencies": [
+			"esbuild"
+		]
 	},
 	"packageManager": "pnpm@10.7.1",
 	"devDependencies": {
