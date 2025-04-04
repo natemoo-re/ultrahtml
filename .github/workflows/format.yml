@@ -20,7 +20,10 @@ jobs:
       - run: pnpm install
       - run: pnpm run format
       - uses: stefanzweifel/git-auto-commit-action@v5
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           commit_message: "[ci] format"
           branch: ${{ github.head_ref }}
           commit_author: ${{ github.event.commits[0].author.name }} <${{ github.actor }}@users.noreply.github.com>
+
