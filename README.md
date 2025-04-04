@@ -99,7 +99,7 @@ console.log(output); // <h2>Hello world!</h2>
 
 #### Sanitization
 
-`ultrahtml/transformers/sanitize` implements an extension of the [HTML Sanitizer API](https://developer.mozilla.org/en-US/docs/Web/API/Sanitizer/Sanitizer).
+`ultrahtml/transformers/sanitize` implements an extension of a proposed HTML Sanitizer API (circa 2022.) Although that proposal has since been withdrawn, it remains as the foundation of `ultrahtml`'s API. In a future major version of `ultrahtml`, we hope to track against [WICG Sanitizer API proposal](https://wicg.github.io/sanitizer-api/) if it becomes an official WHATWG specification.
 
 | Option              | Type                       | Default      | Description                                                                                                                                                                                                                               |
 | ------------------- | -------------------------- | ------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
