@@ -77,6 +77,26 @@ const output = await transform(`<h1>Hello world!</h1>`, [
 console.log(output); // <h2>Hello world!</h2>
 ```
 
+#### `transformSync`
+
+The `transformSync` function is identical to the `transform` function, but is synchronous. This should only be used when it is guaranteed there are no `async` functions in the transformers.
+
+```js
+import { transformSync, html } from "ultrahtml";
+import swap from "ultrahtml/transformers/swap";
+import sanitize from "ultrahtml/transformers/sanitize";
+
+const output = transformSync(`<h1>Hello world!</h1>`, [
+  swap({
+    h1: "h2",
+    h3: (props, children) => html`<h2 class="ultra">${children}</h2>`,
+  }),
+  sanitize({ allowElements: ["h1", "h2", "h3"] }),
+]);
+
+console.log(output); // <h2>Hello world!</h2>
+```
+
 #### Sanitization
 
 `ultrahtml/transformers/sanitize` implements an extension of the [HTML Sanitizer API](https://developer.mozilla.org/en-US/docs/Web/API/Sanitizer/Sanitizer).
