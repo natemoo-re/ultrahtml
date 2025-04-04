@@ -471,41 +471,44 @@ export interface Transformer {
 }
 
 export interface TransformerSync {
-  (node: Node): Node;
+	(node: Node): Node;
 }
 
-function parseTransformArgs(markup: string | Node, transformers: Transformer[]) {
-  if (!Array.isArray(transformers)) {
-    throw new Error(
-      `Invalid second argument for \`transform\`! Expected \`Transformer[]\` but got \`${typeof transformers}\``
-    );
-  }
-  const doc = typeof markup === "string" ? parse(markup) : markup;
-  return { doc }
+function parseTransformArgs(
+	markup: string | Node,
+	transformers: Transformer[],
+) {
+	if (!Array.isArray(transformers)) {
+		throw new Error(
+			`Invalid second argument for \`transform\`! Expected \`Transformer[]\` but got \`${typeof transformers}\``,
+		);
+	}
+	const doc = typeof markup === 'string' ? parse(markup) : markup;
+	return { doc };
 }
 
 export async function transform(
-  markup: string | Node,
-  transformers: Transformer[] = []
+	markup: string | Node,
+	transformers: Transformer[] = [],
 ): Promise<string> {
-  const { doc } = parseTransformArgs(markup, transformers);
+	const { doc } = parseTransformArgs(markup, transformers);
 
-  let newDoc = doc;
-  for (const t of transformers) {
-    newDoc = await t(newDoc);
-  }
-  return render(newDoc);
+	let newDoc = doc;
+	for (const t of transformers) {
+		newDoc = await t(newDoc);
+	}
+	return render(newDoc);
 }
 
 export function transformSync(
-  markup: string | Node,
-  transformers: TransformerSync[] = []
+	markup: string | Node,
+	transformers: TransformerSync[] = [],
 ): string {
-  const { doc } = parseTransformArgs(markup, transformers);
+	const { doc } = parseTransformArgs(markup, transformers);
 
-  let newDoc = doc;
-  for (const t of transformers) {
-    newDoc = t(newDoc);
-  }
-  return renderSync(newDoc);
+	let newDoc = doc;
+	for (const t of transformers) {
+		newDoc = t(newDoc);
+	}
+	return renderSync(newDoc);
 }

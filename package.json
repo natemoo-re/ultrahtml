@@ -56,9 +56,7 @@
 		"node": "18.20.4"
 	},
 	"pnpm": {
-		"onlyBuiltDependencies": [
-			"esbuild"
-		]
+		"onlyBuiltDependencies": ["esbuild"]
 	},
 	"packageManager": "pnpm@10.7.1",
 	"devDependencies": {
