@@ -1,6 +1,7 @@
 name: Format
 
 on:
+  # Disabled because branch protections rules don't allow pushes to main
   workflow_dispatch:
 
 jobs:
