@@ -47,9 +47,6 @@ walkSync(ast, (node) => {
 
 The `render` function allows you to serialize an AST back into a string.
 
-> **Note**
-> By default, `render` will sanitize your markup, removing any `script` tags. Pass `{ sanitize: false }` to disable this behavior.
-
 ```js
 import { parse, render } from "ultrahtml";
 
