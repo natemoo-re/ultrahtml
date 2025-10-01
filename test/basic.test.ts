@@ -92,4 +92,10 @@ s"></div>`);
 more&quot;"></div>`);
 		expect(attributes).toMatchObject({ a: '&quot;never\nmore&quot;' });
 	});
+	it('#', async () => {
+		const {
+			children: [{ attributes }],
+		} = parse(`<template #slot></template>`);
+		expect(attributes).toMatchObject({ '#slot': '' });
+	});
 });
