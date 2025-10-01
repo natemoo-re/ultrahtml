@@ -104,7 +104,7 @@ const RAW_TAGS = new Set<string>(['script', 'style']);
 const DOM_PARSER_RE =
 	/(?:<(\/?)([a-zA-Z][a-zA-Z0-9\:-]*)(?:\s([^>]*?))?((?:\s*\/)?)>|(<\!\-\-)([\s\S]*?)(\-\->)|(<\!)([\s\S]*?)(>))/gm;
 
-const ATTR_KEY_IDENTIFIER = /[\@\.a-z0-9_\:\-]/i;
+const ATTR_KEY_IDENTIFIER = /[#@.a-z0-9_:-]/i;
 
 function splitAttrs(str?: string) {
 	let obj: Record<string, string> = {};
