@@ -1,4 +1,5 @@
 import { writeFileSync, mkdirSync } from 'node:fs';
+import { rm } from 'node:fs/promises';
 import path from 'node:path';
 
 import { build } from 'esbuild';
@@ -9,6 +10,8 @@ import colors from 'chalk';
 import { generateDtsBundle } from 'dts-bundle-generator';
 
 async function run() {
+  await rm('dist', { recursive: true, force: true });
+
 	const files = await globby(['src/**/*.ts', '!src/env.d.ts']);
 	const output = {};
 	const promises = [];
@@ -21,12 +24,12 @@ async function run() {
 				external: ['../selector.js', '../index.js', './index.js'],
 				bundle: true,
 				format: 'esm',
-				minify: true,
-				sourcemap: 'external',
+				minify: false,
+				sourcemap: false,
 				target: 'node16',
 				platform: 'node',
 			}).then((metadata) => {
-				const file = Object.keys(metadata.metafile.outputs)[1];
+				const file = Object.keys(metadata.metafile.outputs)[0];
 				const size = gzipSizeFromFileSync(file);
 				const b = bytes(size);
 				output[file] = b;
