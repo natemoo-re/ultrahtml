@@ -1,17 +1,22 @@
 import { writeFileSync, mkdirSync } from 'node:fs';
+import { rm, glob } from 'node:fs/promises';
 import path from 'node:path';
+import { styleText } from 'node:util';
 
 import { build } from 'esbuild';
-import { globby } from 'globby';
 import { gzipSizeFromFileSync } from 'gzip-size';
 import bytes from 'pretty-bytes';
-import colors from 'chalk';
 import { generateDtsBundle } from 'dts-bundle-generator';
 
 async function run() {
-	const files = await globby(['src/**/*.ts', '!src/env.d.ts']);
+	await rm('dist', { recursive: true, force: true });
+
+	const files = [];
 	const output = {};
 	const promises = [];
+	for await (const file of glob(['src/**/*.ts', '!src/env.d.ts'])) {
+		files.push(file);
+	}
 	for (const file of files) {
 		promises.push(
 			build({
@@ -60,7 +65,7 @@ async function run() {
 	for (const [file, size] of Object.entries(output).sort(([a], [b]) =>
 		a.localeCompare(b),
 	)) {
-		console.log(`${file} ${colors.green(size)}`);
+		console.log(`${file} ${styleText('green', size)}`);
 	}
 }
 
