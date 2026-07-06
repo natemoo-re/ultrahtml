@@ -134,7 +134,6 @@ function splitAttrs(str?: string) {
 		let currentKey: string | undefined;
 		let currentValue: string = '';
 		let tokenStartIndex: number | undefined;
-		let valueDelimiter: number | undefined;
 		for (let currentIndex = 0; currentIndex < str.length; currentIndex++) {
 			const currentChar = str.charCodeAt(currentIndex);
 
@@ -161,25 +160,27 @@ function splitAttrs(str?: string) {
 						state = 'none';
 					}
 				}
-			} else {
-				if (
-					currentChar === valueDelimiter &&
-					currentIndex > 0 &&
-					str.charCodeAt(currentIndex - 1) !== CHAR_BACKSLASH
+			} else if (
+				currentChar === CHAR_DOUBLE_QUOTE ||
+				currentChar === CHAR_SINGLE_QUOTE
+			) {
+				const quote = currentChar === CHAR_DOUBLE_QUOTE ? '"' : "'";
+				const valueStart = currentIndex + 1;
+				let closeIndex = str.indexOf(quote, valueStart);
+				// skip escaped delimiters
+				while (
+					closeIndex > 0 &&
+					str.charCodeAt(closeIndex - 1) === CHAR_BACKSLASH
 				) {
-					if (valueDelimiter) {
-						currentValue = str.substring(tokenStartIndex!, currentIndex);
-						valueDelimiter = undefined;
-						state = 'none';
-					}
-				} else if (
-					(currentChar === CHAR_DOUBLE_QUOTE ||
-						currentChar === CHAR_SINGLE_QUOTE) &&
-					!valueDelimiter
-				) {
-					tokenStartIndex = currentIndex + 1;
-					valueDelimiter = currentChar;
+					closeIndex = str.indexOf(quote, closeIndex + 1);
 				}
+				if (closeIndex === -1) {
+					// unterminated value, so just leave the key with an empty value
+					break;
+				}
+				currentValue = str.substring(valueStart, closeIndex);
+				currentIndex = closeIndex;
+				state = 'none';
 			}
 		}
 		if (
