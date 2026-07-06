@@ -426,12 +426,15 @@ const ESCAPE_CHARS: Record<string, string> = {
 function escapeHTML(str: string): string {
 	return str.replace(/[&<>]/g, (c) => ESCAPE_CHARS[c] || c);
 }
-export function attrs(attributes: Record<string, string>) {
+function attrsToString(attributes: Record<string, string>): string {
 	let attrStr = '';
 	for (const [key, value] of Object.entries(attributes)) {
 		attrStr += ` ${key}="${value}"`;
 	}
-	return mark(attrStr, [HTMLString, AttrString]);
+	return attrStr;
+}
+export function attrs(attributes: Record<string, string>) {
+	return mark(attrsToString(attributes), [HTMLString, AttrString]);
 }
 export function html(tmpl: TemplateStringsArray, ...vals: any[]) {
 	let buf = '';
@@ -440,7 +443,7 @@ export function html(tmpl: TemplateStringsArray, ...vals: any[]) {
 		const expr = vals[i];
 		if (buf.endsWith('...') && expr && typeof expr === 'object') {
 			buf = buf.slice(0, -3).trimEnd();
-			buf += attrs(expr).value;
+			buf += attrsToString(expr);
 		} else if (expr && expr[AttrString]) {
 			buf = buf.trimEnd();
 			buf += expr.value;
@@ -488,11 +491,11 @@ async function renderElement(node: Node): Promise<string> {
 	if (name === Fragment) return children;
 	const isSelfClosing = canSelfClose(node);
 	if (isSelfClosing || VOID_TAGS.has(name)) {
-		return `<${node.name}${attrs(attributes).value}${
+		return `<${node.name}${attrsToString(attributes)}${
 			isSelfClosing ? ' /' : ''
 		}>`;
 	}
-	return `<${node.name}${attrs(attributes).value}>${children}</${node.name}>`;
+	return `<${node.name}${attrsToString(attributes)}>${children}</${node.name}>`;
 }
 
 function renderElementSync(node: Node): string {
@@ -508,11 +511,11 @@ function renderElementSync(node: Node): string {
 	if (name === Fragment) return children;
 	const isSelfClosing = canSelfClose(node);
 	if (isSelfClosing || VOID_TAGS.has(name)) {
-		return `<${node.name}${attrs(attributes).value}${
+		return `<${node.name}${attrsToString(attributes)}${
 			isSelfClosing ? ' /' : ''
 		}>`;
 	}
-	return `<${node.name}${attrs(attributes).value}>${children}</${node.name}>`;
+	return `<${node.name}${attrsToString(attributes)}>${children}</${node.name}>`;
 }
 
 export function renderSync(node: Node): string {
