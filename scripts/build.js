@@ -26,7 +26,7 @@ async function run() {
 				format: 'esm',
 				minify: false,
 				sourcemap: false,
-				target: 'node16',
+				target: 'node22',
 				platform: 'node',
 			}).then((metadata) => {
 				const file = Object.keys(metadata.metafile.outputs)[0];
