@@ -21,7 +21,7 @@ jobs:
       - uses: actions/setup-node@v4
         id: cache-node
         with:
-          node-version: 18
+          node-version: 25
           cache: "pnpm"
       - run: pnpm install
       - run: pnpm run build
