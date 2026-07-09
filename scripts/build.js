@@ -26,12 +26,12 @@ async function run() {
 				external: ['../selector.js', '../index.js', './index.js'],
 				bundle: true,
 				format: 'esm',
-				minify: true,
-				sourcemap: 'external',
+				minify: false,
+				sourcemap: false,
 				target: 'node16',
 				platform: 'node',
 			}).then((metadata) => {
-				const file = Object.keys(metadata.metafile.outputs)[1];
+				const file = Object.keys(metadata.metafile.outputs)[0];
 				const size = gzipSizeFromFileSync(file);
 				const b = bytes(size);
 				output[file] = b;
