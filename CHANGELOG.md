@@ -1,5 +1,17 @@
 # ultrahtml
 
+## 1.7.0
+
+### Minor Changes
+
+- 4694b57: Updates the build target from Node 16 to Node 22. Published code now uses modern syntax like optional chaining (`?.`) directly instead of downleveled equivalents, resulting in slightly smaller output. Node 22 or later is now the supported runtime baseline.
+
+### Patch Changes
+
+- 236be9a: Remove sourcemaps and disable minification of published sources.
+- 236be9a: Improve performance by using character codes and numeric comparisons.
+- 4c1c0a0: Improve parsing performance by 1.5x and render performance by 2x.
+
 ## 1.6.0
 
 ### Minor Changes
