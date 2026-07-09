@@ -2,4 +2,4 @@
 "ultrahtml": patch
 ---
 
-Improve parsing performance by using numeric comparisons and selective branding of strings. 
+Improve parsing performance by 1.5x and render performance by 2x. 
