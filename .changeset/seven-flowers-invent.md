@@ -2,4 +2,4 @@
 "ultrahtml": patch
 ---
 
-Improve parsing perf by skipping ahead to delimiters and avoiding unnecessary branding of strings.
+Improve parsing performance by using numeric comparisons and selective branding of strings. 
