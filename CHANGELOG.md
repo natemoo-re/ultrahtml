@@ -1,12 +1,5 @@
 # ultrahtml
 
-## 1.6.1
-
-### Patch Changes
-
-- 2c51c20: Remove sourcemaps and disable minification of published sources.
-- 0fc2cc1: Improve performance by using character codes and numeric comparisons.
-
 ## 1.6.0
 
 ### Minor Changes
