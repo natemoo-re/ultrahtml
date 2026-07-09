@@ -104,7 +104,28 @@ const RAW_TAGS = new Set<string>(['script', 'style']);
 const DOM_PARSER_RE =
 	/(?:<(\/?)([a-zA-Z][a-zA-Z0-9\:-]*)(?:\s([^>]*?))?((?:\s*\/)?)>|(<\!\-\-)([\s\S]*?)(\-\->)|(<\!)([\s\S]*?)(>))/gm;
 
-const ATTR_KEY_IDENTIFIER = /[\@\.a-z0-9_\:\-]/i;
+const CHAR_AT = 64; // @
+const CHAR_DOT = 46; // .
+const CHAR_HYPHEN = 45; // -
+const CHAR_COLON = 58; // :
+const CHAR_UNDERSCORE = 95; // _
+const CHAR_EQUALS = 61; // =
+const CHAR_DOUBLE_QUOTE = 34; // "
+const CHAR_SINGLE_QUOTE = 39; // '
+const CHAR_BACKSLASH = 92; // \
+
+function isAttrKeyIdentifier(chr: number): boolean {
+	return (
+		(chr >= 97 && chr <= 122) || // a-z
+		(chr >= 65 && chr <= 90) || // A-Z
+		(chr >= 48 && chr <= 57) || // 0-9
+		chr === CHAR_AT ||
+		chr === CHAR_DOT ||
+		chr === CHAR_HYPHEN ||
+		chr === CHAR_COLON ||
+		chr === CHAR_UNDERSCORE
+	);
+}
 
 function splitAttrs(str?: string) {
 	let obj: Record<string, string> = {};
@@ -113,12 +134,12 @@ function splitAttrs(str?: string) {
 		let currentKey: string | undefined;
 		let currentValue: string = '';
 		let tokenStartIndex: number | undefined;
-		let valueDelimiter: '"' | "'" | undefined;
+		let valueDelimiter: number | undefined;
 		for (let currentIndex = 0; currentIndex < str.length; currentIndex++) {
-			const currentChar = str[currentIndex];
+			const currentChar = str.charCodeAt(currentIndex);
 
 			if (state === 'none') {
-				if (ATTR_KEY_IDENTIFIER.test(currentChar)) {
+				if (isAttrKeyIdentifier(currentChar)) {
 					// add attribute
 					if (currentKey) {
 						obj[currentKey] = currentValue;
@@ -128,13 +149,13 @@ function splitAttrs(str?: string) {
 
 					tokenStartIndex = currentIndex;
 					state = 'key';
-				} else if (currentChar === '=' && currentKey) {
+				} else if (currentChar === CHAR_EQUALS && currentKey) {
 					state = 'value';
 				}
 			} else if (state === 'key') {
-				if (!ATTR_KEY_IDENTIFIER.test(currentChar)) {
+				if (!isAttrKeyIdentifier(currentChar)) {
 					currentKey = str.substring(tokenStartIndex!, currentIndex);
-					if (currentChar === '=') {
+					if (currentChar === CHAR_EQUALS) {
 						state = 'value';
 					} else {
 						state = 'none';
@@ -144,7 +165,7 @@ function splitAttrs(str?: string) {
 				if (
 					currentChar === valueDelimiter &&
 					currentIndex > 0 &&
-					str[currentIndex - 1] !== '\\'
+					str.charCodeAt(currentIndex - 1) !== CHAR_BACKSLASH
 				) {
 					if (valueDelimiter) {
 						currentValue = str.substring(tokenStartIndex!, currentIndex);
@@ -152,7 +173,8 @@ function splitAttrs(str?: string) {
 						state = 'none';
 					}
 				} else if (
-					(currentChar === '"' || currentChar === "'") &&
+					(currentChar === CHAR_DOUBLE_QUOTE ||
+						currentChar === CHAR_SINGLE_QUOTE) &&
 					!valueDelimiter
 				) {
 					tokenStartIndex = currentIndex + 1;
