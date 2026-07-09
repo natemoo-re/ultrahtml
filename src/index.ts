@@ -134,7 +134,6 @@ function splitAttrs(str?: string) {
 		let currentKey: string | undefined;
 		let currentValue: string = '';
 		let tokenStartIndex: number | undefined;
-		let valueDelimiter: number | undefined;
 		for (let currentIndex = 0; currentIndex < str.length; currentIndex++) {
 			const currentChar = str.charCodeAt(currentIndex);
 
@@ -161,25 +160,27 @@ function splitAttrs(str?: string) {
 						state = 'none';
 					}
 				}
-			} else {
-				if (
-					currentChar === valueDelimiter &&
-					currentIndex > 0 &&
-					str.charCodeAt(currentIndex - 1) !== CHAR_BACKSLASH
+			} else if (
+				currentChar === CHAR_DOUBLE_QUOTE ||
+				currentChar === CHAR_SINGLE_QUOTE
+			) {
+				const quote = currentChar === CHAR_DOUBLE_QUOTE ? '"' : "'";
+				const valueStart = currentIndex + 1;
+				let closeIndex = str.indexOf(quote, valueStart);
+				// skip escaped delimiters
+				while (
+					closeIndex > 0 &&
+					str.charCodeAt(closeIndex - 1) === CHAR_BACKSLASH
 				) {
-					if (valueDelimiter) {
-						currentValue = str.substring(tokenStartIndex!, currentIndex);
-						valueDelimiter = undefined;
-						state = 'none';
-					}
-				} else if (
-					(currentChar === CHAR_DOUBLE_QUOTE ||
-						currentChar === CHAR_SINGLE_QUOTE) &&
-					!valueDelimiter
-				) {
-					tokenStartIndex = currentIndex + 1;
-					valueDelimiter = currentChar;
+					closeIndex = str.indexOf(quote, closeIndex + 1);
 				}
+				if (closeIndex === -1) {
+					// unterminated value, so just leave the key with an empty value
+					break;
+				}
+				currentValue = str.substring(valueStart, closeIndex);
+				currentIndex = closeIndex;
+				state = 'none';
 			}
 		}
 		if (
@@ -425,12 +426,15 @@ const ESCAPE_CHARS: Record<string, string> = {
 function escapeHTML(str: string): string {
 	return str.replace(/[&<>]/g, (c) => ESCAPE_CHARS[c] || c);
 }
-export function attrs(attributes: Record<string, string>) {
+function attrsToString(attributes: Record<string, string>): string {
 	let attrStr = '';
 	for (const [key, value] of Object.entries(attributes)) {
 		attrStr += ` ${key}="${value}"`;
 	}
-	return mark(attrStr, [HTMLString, AttrString]);
+	return attrStr;
+}
+export function attrs(attributes: Record<string, string>) {
+	return mark(attrsToString(attributes), [HTMLString, AttrString]);
 }
 export function html(tmpl: TemplateStringsArray, ...vals: any[]) {
 	let buf = '';
@@ -439,7 +443,7 @@ export function html(tmpl: TemplateStringsArray, ...vals: any[]) {
 		const expr = vals[i];
 		if (buf.endsWith('...') && expr && typeof expr === 'object') {
 			buf = buf.slice(0, -3).trimEnd();
-			buf += attrs(expr).value;
+			buf += attrsToString(expr);
 		} else if (expr && expr[AttrString]) {
 			buf = buf.trimEnd();
 			buf += expr.value;
@@ -487,11 +491,11 @@ async function renderElement(node: Node): Promise<string> {
 	if (name === Fragment) return children;
 	const isSelfClosing = canSelfClose(node);
 	if (isSelfClosing || VOID_TAGS.has(name)) {
-		return `<${node.name}${attrs(attributes).value}${
+		return `<${node.name}${attrsToString(attributes)}${
 			isSelfClosing ? ' /' : ''
 		}>`;
 	}
-	return `<${node.name}${attrs(attributes).value}>${children}</${node.name}>`;
+	return `<${node.name}${attrsToString(attributes)}>${children}</${node.name}>`;
 }
 
 function renderElementSync(node: Node): string {
@@ -507,11 +511,11 @@ function renderElementSync(node: Node): string {
 	if (name === Fragment) return children;
 	const isSelfClosing = canSelfClose(node);
 	if (isSelfClosing || VOID_TAGS.has(name)) {
-		return `<${node.name}${attrs(attributes).value}${
+		return `<${node.name}${attrsToString(attributes)}${
 			isSelfClosing ? ' /' : ''
 		}>`;
 	}
-	return `<${node.name}${attrs(attributes).value}>${children}</${node.name}>`;
+	return `<${node.name}${attrsToString(attributes)}>${children}</${node.name}>`;
 }
 
 export function renderSync(node: Node): string {
