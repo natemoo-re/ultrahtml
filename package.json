@@ -69,6 +69,7 @@
 		"@biomejs/biome": "1.9.2",
 		"@changesets/cli": "^2.27.8",
 		"@types/stylis": "^4.2.6",
+		"@vitest/coverage-v8": "^4.1.10",
 		"dts-bundle-generator": "^9.5.1",
 		"esbuild": "^0.25.2",
 		"gzip-size": "^7.0.0",
@@ -77,6 +78,6 @@
 		"parsel-js": "^1.1.2",
 		"pretty-bytes": "^6.1.1",
 		"stylis": "^4.3.4",
-		"vitest": "^2.1.1"
+		"vitest": "^4.1.10"
 	}
 }
