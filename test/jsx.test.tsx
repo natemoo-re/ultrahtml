@@ -1,4 +1,3 @@
-import { h } from '../src/index.js';
 import { describe, expect, it } from 'vitest';
 import { render } from '../src/index';
 

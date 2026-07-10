@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { h, Fragment, transform } from '../../src/index';
+import { transform } from '../../src/index';
 import scope from '../../src/transformers/scope';
 
 describe('scope', () => {
