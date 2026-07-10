@@ -73,8 +73,8 @@ export function h(
 				? { type: TEXT_NODE, value: escapeHTML(String(child)) }
 				: child,
 		),
-		parent: undefined as any,
-		loc: [] as any,
+		parent: undefined as unknown as Node,
+		loc: [] as unknown as ElementNode['loc'],
 	};
 	if (typeof type === 'function') {
 		__unsafeRenderFn(vnode, type);
@@ -201,7 +201,7 @@ export function parse(input: string | ReturnType<typeof html>): any {
 	let str = typeof input === 'string' ? input : input.value;
 	let doc: Node,
 		parent: Node,
-		token: any,
+		token: RegExpExecArray | null,
 		text,
 		i,
 		bStart,
@@ -213,17 +213,17 @@ export function parse(input: string | ReturnType<typeof html>): any {
 	parent = doc = {
 		type: DOCUMENT_NODE,
 		children: [] as Node[],
-	} as any;
+	} as unknown as DocumentNode;
 
 	let lastIndex = 0;
 	function commitTextNode() {
-		text = str.substring(lastIndex, DOM_PARSER_RE.lastIndex - token[0].length);
+		text = str.substring(lastIndex, DOM_PARSER_RE.lastIndex - token![0].length);
 		if (text) {
 			(parent as ParentNode).children.push({
 				type: TEXT_NODE,
 				value: text,
 				parent,
-			} as any);
+			} as TextNode);
 		}
 	}
 
@@ -256,9 +256,9 @@ export function parse(input: string | ReturnType<typeof html>): any {
 						end: DOM_PARSER_RE.lastIndex,
 					},
 				],
-			} as any;
+			} as CommentNode;
 			tags.push(tag);
-			(tag.parent as any).children.push(tag);
+			tag.parent.children.push(tag);
 		} else if (bStart === '<!') {
 			i = DOM_PARSER_RE.lastIndex - token[0].length;
 			tag = {
@@ -297,7 +297,7 @@ export function parse(input: string | ReturnType<typeof html>): any {
 							start: DOM_PARSER_RE.lastIndex - token[0].length,
 							end: DOM_PARSER_RE.lastIndex,
 						},
-					] as any,
+					] as unknown as ElementNode['loc'],
 				};
 				tags.push(tag);
 				tag.parent.children.push(tag);
