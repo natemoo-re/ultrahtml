@@ -1,13 +1,17 @@
 import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
-	esbuild: {
-		jsxFactory: 'h',
-		jsxFragment: 'Fragment',
+	oxc: {
+		jsx: {
+			runtime: 'classic',
+			pragma: 'h',
+			pragmaFrag: 'Fragment',
+			development: false,
+		},
 	},
 	test: {
-		transformMode: {
-			web: [/\.[jt]sx$/],
+		coverage: {
+			provider: 'v8',
 		},
 	},
 });
