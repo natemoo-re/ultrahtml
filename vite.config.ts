@@ -1,12 +1,19 @@
+import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
 	oxc: {
 		jsx: {
-			runtime: 'classic',
-			pragma: 'h',
-			pragmaFrag: 'Fragment',
+			runtime: 'automatic',
+			importSource: 'ultrahtml',
 			development: false,
+		},
+	},
+	resolve: {
+		alias: {
+			'ultrahtml/jsx-runtime': fileURLToPath(
+				new URL('./src/jsx-runtime/index.ts', import.meta.url),
+			),
 		},
 	},
 	test: {

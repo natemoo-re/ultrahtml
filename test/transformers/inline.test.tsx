@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { h, Fragment, parse, transform } from '../../src/index';
+import { parse, transform } from '../../src/index';
 import inline from '../../src/transformers/inline';
 import { setTimeout as sleep } from 'timers/promises';
 
