@@ -1,5 +1,11 @@
 # ultrahtml
 
+## 1.7.1
+
+### Patch Changes
+
+- 815c67c: Remove redundant jsx-runtime node creation logic and lean on existing `h` function.
+
 ## 1.7.0
 
 ### Minor Changes
