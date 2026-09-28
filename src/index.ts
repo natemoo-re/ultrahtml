@@ -104,6 +104,7 @@ const RAW_TAGS = new Set<string>(['script', 'style']);
 const DOM_PARSER_RE =
 	/(?:<(\/?)([a-zA-Z][a-zA-Z0-9\:-]*)(?:\s([^>]*?))?((?:\s*\/)?)>|(<\!\-\-)([\s\S]*?)(\-\->)|(<\!)([\s\S]*?)(>))/gm;
 
+const CHAR_HASH = 35; // #
 const CHAR_AT = 64; // @
 const CHAR_DOT = 46; // .
 const CHAR_HYPHEN = 45; // -
@@ -119,6 +120,7 @@ function isAttrKeyIdentifier(chr: number): boolean {
 		(chr >= 97 && chr <= 122) || // a-z
 		(chr >= 65 && chr <= 90) || // A-Z
 		(chr >= 48 && chr <= 57) || // 0-9
+		chr === CHAR_HASH ||
 		chr === CHAR_AT ||
 		chr === CHAR_DOT ||
 		chr === CHAR_HYPHEN ||
