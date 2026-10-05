@@ -101,8 +101,11 @@ const VOID_TAGS = new Set<string>([
 	'wbr',
 ]);
 const RAW_TAGS = new Set<string>(['script', 'style']);
+// In the attributes of a tag, a quoted value after `=` is skipped as a whole,
+// so a `>` inside it does not end the tag. Any other quote, or a quote that is
+// never closed, is a plain character.
 const DOM_PARSER_RE =
-	/(?:<(\/?)([a-zA-Z][a-zA-Z0-9\:-]*)(?:\s([^>]*?))?((?:\s*\/)?)>|(<\!\-\-)([\s\S]*?)(\-\->)|(<\!)([\s\S]*?)(>))/gm;
+	/(?:<(\/?)([a-zA-Z][a-zA-Z0-9\:-]*)(?:\s((?:=\s*"[^"]*"|=\s*'[^']*'|=\s*"(?![^"]*")|=\s*'(?![^']*')|=(?!\s*["'])|[^>"'=]|["'])*?))?((?:\s*\/)?)>|(<\!\-\-)([\s\S]*?)(\-\->)|(<\!)([\s\S]*?)(>))/gm;
 
 const CHAR_AT = 64; // @
 const CHAR_DOT = 46; // .
