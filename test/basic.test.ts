@@ -1,4 +1,4 @@
-import { parse, render } from '../src/';
+import { parse, render, renderSync } from '../src/';
 import { describe, expect, it, test } from 'vitest';
 
 test('sanity', () => {
@@ -91,5 +91,25 @@ s"></div>`);
 		} = parse(`<div a="&quot;never
 more&quot;"></div>`);
 		expect(attributes).toMatchObject({ a: '&quot;never\nmore&quot;' });
+	});
+	it('renders a double quote inside a single-quoted value', async () => {
+		const input = `<p title='a"b'>x</p>`;
+		const output = await render(parse(input));
+		expect(output).toEqual(`<p title="a&quot;b">x</p>`);
+		expect(parse(output).children[0].attributes).toEqual({
+			title: 'a&quot;b',
+		});
+	});
+	it('does not let a quoted value add attributes on render', async () => {
+		const input = `<p title='x" onclick="alert(1)'>hi</p>`;
+		const output = await render(parse(input));
+		expect(output).toEqual(`<p title="x&quot; onclick=&quot;alert(1)">hi</p>`);
+		expect(Object.keys(parse(output).children[0].attributes)).toEqual([
+			'title',
+		]);
+	});
+	it('escapes double quotes in renderSync', () => {
+		const output = renderSync(parse(`<p title='a"b'>x</p>`));
+		expect(output).toEqual(`<p title="a&quot;b">x</p>`);
 	});
 });
