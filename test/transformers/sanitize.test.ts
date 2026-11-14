@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import sanitize from '../../src/transformers/sanitize.js';
-import { transform } from '../../src/index.js';
+import { parse, transform } from '../../src/index.js';
 
 describe('sanitize', () => {
 	it('drop', async () => {
@@ -106,5 +106,12 @@ describe('sanitize', () => {
 			sanitize({ allowAttributes: { nonexistent: ['a'] } }),
 		]);
 		expect(output).toEqual(`<a href=\"https://example.com\">Hello world!</a>`);
+	});
+	it('does not let a quoted value bring back a dropped attribute', async () => {
+		const input = `<p title='x" onclick="alert(1)'>hi</p>`;
+		const output = await transform(input, [
+			sanitize({ dropAttributes: { onclick: ['*'] } }),
+		]);
+		expect(parse(output).children[0].attributes).not.toHaveProperty('onclick');
 	});
 });

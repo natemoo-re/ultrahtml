@@ -429,7 +429,9 @@ function escapeHTML(str: string): string {
 function attrsToString(attributes: Record<string, string>): string {
 	let attrStr = '';
 	for (const [key, value] of Object.entries(attributes)) {
-		attrStr += ` ${key}="${value}"`;
+		// Values are kept raw (entities are not decoded), so only `"` needs
+		// escaping: it is the one character that can end a double-quoted value.
+		attrStr += ` ${key}="${String(value).replace(/"/g, '&quot;')}"`;
 	}
 	return attrStr;
 }

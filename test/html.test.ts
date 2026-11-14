@@ -18,6 +18,15 @@ describe('html', () => {
 		const { value } = html`<h1 ${attrs({ hey: 'ya' })}></h1>`;
 		expect(value).toEqual(`<h1 hey="ya"></h1>`);
 	});
+	it('attrs escapes double quotes', () => {
+		const { value } =
+			html`<h1 ${attrs({ title: 'x" onclick="alert(1)' })}></h1>`;
+		expect(value).toEqual(`<h1 title="x&quot; onclick=&quot;alert(1)"></h1>`);
+	});
+	it('spread escapes double quotes', () => {
+		const { value } = html`<h1 ...${{ title: 'a"b' }}></h1>`;
+		expect(value).toEqual(`<h1 title="a&quot;b"></h1>`);
+	});
 	it('spread', () => {
 		const { value } = html`<h1 ...${{ hey: 'ya' }}></h1>`;
 		expect(value).toEqual(`<h1 hey="ya"></h1>`);
